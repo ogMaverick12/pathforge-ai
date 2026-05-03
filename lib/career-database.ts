@@ -1,12 +1,19 @@
 // ============================================================
-// PATHFORGE AI — CAREER DATABASE (v3 — 8 Careers, Real Data)
+// PATHFORGE AI — CAREER DATABASE (v4 — Master Prompt v2.0)
 // ============================================================
+
+import type { CareerType } from './career-types';
 
 export interface CareerProfile {
   id: string;
   name: string;
   aliases: string[];
   category: "Technical" | "Financial" | "Entrepreneurial" | "Hybrid" | "Creative" | "Research" | "Government" | "Other";
+  // ── Master Prompt v2.0 fields ──
+  careerType: CareerType;
+  domain: string;
+  semantic_tags: string[];
+  keywords_negative: string[];
   streams: string[];
   minMarks: number;
   minMarksStretch: number;
@@ -45,6 +52,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   software_engineer: {
     id: "software_engineer",
     category: "Technical",
+    careerType: "A",
+    domain: "technology",
+    semantic_tags: ["software","coding","programming","tech","developer","engineer"],
+    keywords_negative: ["hardware","mechanical","civil engineer"],
     name: "Software Engineer",
     aliases: ["swe", "software developer", "coder", "programmer", "developer",
                "google", "microsoft", "amazon", "faang", "tech", "coding", "web developer", "backend", "frontend", "full stack"],
@@ -79,6 +90,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   doctor_mbbs: {
     id: "doctor_mbbs",
     category: "Research",
+    careerType: "B",
+    domain: "healthcare",
+    semantic_tags: ["medicine","doctor","mbbs","hospital","surgery","physician"],
+    keywords_negative: ["veterinary","ayurveda","homeopathy"],
     name: "Medical Doctor (MBBS)",
     aliases: ["doctor", "physician", "mbbs", "medicine", "medical", "surgeon", "neet", "aiims", "doctor mbbs", "cardiologist", "dermatologist", "ortho"],
     streams: ["PCB"],
@@ -110,6 +125,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   chartered_accountant: {
     id: "chartered_accountant",
     category: "Financial",
+    careerType: "B",
+    domain: "finance",
+    semantic_tags: ["accounting","audit","taxation","finance","ca"],
+    keywords_negative: ["software","coding","engineering"],
     name: "Chartered Accountant (CA)",
     aliases: ["ca", "chartered accountant", "finance", "accountant", "cfa", "icai", "audit", "taxation"],
     streams: ["Commerce", "PCM", "Arts"],
@@ -138,6 +157,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   data_scientist: {
     id: "data_scientist",
     category: "Technical",
+    careerType: "A",
+    domain: "technology",
+    semantic_tags: ["data","analytics","machine learning","statistics","python","big data"],
+    keywords_negative: ["data entry","database admin"],
     name: "Data Scientist / ML Engineer",
     aliases: ["data science", "machine learning", "ml", "ai", "artificial intelligence", "data analyst", "nlp", "deep learning", "chatgpt", "openai", "ai engineer", "ml engineer", "ai ml engineer"],
     streams: ["PCM", "Commerce"],
@@ -167,6 +190,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   game_developer: {
     id: "game_developer",
     category: "Other",
+    careerType: "A",
+    domain: "technology",
+    semantic_tags: ["gaming","game design","unity","unreal","game dev"],
+    keywords_negative: ["gamer","esports player","game tester"],
     name: "Game Developer",
     aliases: ["game dev", "game designer", "game development", "unity", "unreal", "gaming", "indie dev", "esports"],
     streams: ["PCM", "Commerce", "Arts"],
@@ -196,6 +223,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   lawyer: {
     id: "lawyer",
     category: "Other",
+    careerType: "B",
+    domain: "law_government",
+    semantic_tags: ["law","legal","court","justice","litigation","contracts","corporate law"],
+    keywords_negative: ["crime fiction","law enforcement","police"],
     name: "Lawyer / Advocate",
     aliases: ["lawyer", "advocate", "law", "llb", "clat", "legal", "barrister", "attorney", "judge", "corporate law", "criminal lawyer"],
     streams: ["Arts", "Commerce", "PCM", "PCB"],
@@ -225,6 +256,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   architect: {
     id: "architect",
     category: "Creative",
+    careerType: "A",
+    domain: "design",
+    semantic_tags: ["architecture","building","design","construction","urban planning"],
+    keywords_negative: ["software architect","cloud architect","enterprise architect"],
     name: "Architect",
     aliases: ["architect", "architecture", "nata", "b.arch", "building design", "urban design", "interior design"],
     streams: ["PCM", "Arts"],
@@ -254,6 +289,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   cricketer: {
     id: "cricketer",
     category: "Other",
+    careerType: "C",
+    domain: "education_sports",
+    semantic_tags: ["cricket","sports","batting","bowling","ipl","bcci"],
+    keywords_negative: ["sports management","sports journalism","cricket commentary"],
     name: "Professional Cricketer",
     aliases: ["cricket", "cricketer", "bcci", "ipl", "ranji", "sports", "athlete", "cricket player", "batsman", "bowler"],
     streams: ["PCM", "PCB", "Commerce", "Arts"],
@@ -286,6 +325,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   cybersecurity_engineer: {
     id: "cybersecurity_engineer",
     category: "Other",
+    careerType: "A",
+    domain: "technology",
+    semantic_tags: ["cybersecurity","hacking","security","infosec","pentesting"],
+    keywords_negative: ["physical security","security guard"],
     name: "Cybersecurity Engineer / Ethical Hacker",
     aliases: ["cybersecurity", "ethical hacker", "hacker", "security", "pentester", "infosec", "cyber", "bug bounty", "ceh"],
     streams: ["PCM", "Commerce"],
@@ -318,6 +361,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   cloud_architect: {
     id: "cloud_architect",
     category: "Other",
+    careerType: "A",
+    domain: "technology",
+    semantic_tags: ["cloud","aws","azure","devops","infrastructure"],
+    keywords_negative: ["meteorology","weather"],
     name: "Cloud Architect / DevOps Engineer",
     aliases: ["cloud", "devops", "aws", "azure", "google cloud", "cloud engineer", "site reliability", "sre", "infrastructure"],
     streams: ["PCM"],
@@ -348,6 +395,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   ui_ux_designer: {
     id: "ui_ux_designer",
     category: "Other",
+    careerType: "C",
+    domain: "design",
+    semantic_tags: ["ux","ui","user experience","design","figma","prototype"],
+    keywords_negative: ["graphic design","fashion design"],
     name: "UI/UX Designer / Product Designer",
     aliases: ["ux", "ui", "ux designer", "ui designer", "product design", "user experience", "human computer interaction", "hci", "interaction design"],
     streams: ["Arts", "Commerce", "PCM"],
@@ -379,6 +430,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   blockchain_developer: {
     id: "blockchain_developer",
     category: "Other",
+    careerType: "A",
+    domain: "technology",
+    semantic_tags: ["blockchain","crypto","web3","smart contracts","ethereum"],
+    keywords_negative: ["cryptocurrency trading","bitcoin mining"],
     name: "Blockchain Developer / Web3 Engineer",
     aliases: ["blockchain", "web3", "crypto", "defi", "nft", "solidity", "ethereum", "smart contracts"],
     streams: ["PCM"],
@@ -408,6 +463,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   esports_professional: {
     id: "esports_professional",
     category: "Other",
+    careerType: "C",
+    domain: "education_sports",
+    semantic_tags: ["esports","gaming","competitive gaming","streaming","valorant","csgo"],
+    keywords_negative: ["game developer","game designer"],
     name: "Esports Professional / Content Creator",
     aliases: ["esports", "gaming", "streamer", "youtuber", "content creator", "twitch", "youtube gaming", "pro gamer", "esports player"],
     streams: ["PCM", "PCB", "Commerce", "Arts"],
@@ -442,6 +501,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   nurse: {
     id: "nurse",
     category: "Research",
+    careerType: "A",
+    domain: "healthcare",
+    semantic_tags: ["nursing","patient care","hospital","healthcare","bsc nursing"],
+    keywords_negative: ["doctor","surgeon"],
     name: "Nurse / Nursing Professional",
     aliases: ["nurse", "nursing", "bsc nursing", "anm", "gnm", "healthcare nurse", "icu nurse", "midwife"],
     streams: ["PCB"],
@@ -474,6 +537,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   veterinarian: {
     id: "veterinarian",
     category: "Other",
+    careerType: "B",
+    domain: "healthcare",
+    semantic_tags: ["veterinary","animal","pet","vet","animal doctor"],
+    keywords_negative: ["human medicine","mbbs"],
     name: "Veterinarian / Animal Doctor",
     aliases: ["vet", "veterinarian", "veterinary", "animal doctor", "bvsc", "wildlife vet", "zoo vet"],
     streams: ["PCB"],
@@ -505,6 +572,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   ayurveda_practitioner: {
     id: "ayurveda_practitioner",
     category: "Other",
+    careerType: "B",
+    domain: "healthcare",
+    semantic_tags: ["ayurveda","bams","traditional medicine","herbal","wellness"],
+    keywords_negative: ["allopathy","mbbs"],
     name: "Ayurveda Practitioner / BAMS Doctor",
     aliases: ["ayurveda", "bams", "ayurvedic doctor", "traditional medicine", "naturopathy", "homeopathy"],
     streams: ["PCB"],
@@ -535,6 +606,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   pharmacist: {
     id: "pharmacist",
     category: "Other",
+    careerType: "A",
+    domain: "healthcare",
+    semantic_tags: ["pharmacy","medicine","drugs","pharmaceutical","b.pharm"],
+    keywords_negative: ["drug dealer","chemist shop"],
     name: "Pharmacist / Pharmaceutical Scientist",
     aliases: ["pharmacist", "pharmacy", "pharma", "drug development", "pharmaceutical", "bpharm", "mpharm"],
     streams: ["PCB", "PCM"],
@@ -566,6 +641,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   occupational_therapist: {
     id: "occupational_therapist",
     category: "Other",
+    careerType: "A",
+    domain: "healthcare",
+    semantic_tags: ["occupational therapy","rehabilitation","therapy","patient recovery"],
+    keywords_negative: ["physiotherapy","physical therapy"],
     name: "Occupational Therapist",
     aliases: ["occupational therapy", "ot", "occupational therapist", "rehabilitation", "sensory integration"],
     streams: ["PCB"],
@@ -599,6 +678,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   animator: {
     id: "animator",
     category: "Other",
+    careerType: "C",
+    domain: "creative_media",
+    semantic_tags: ["animation","3d","2d","vfx","motion graphics","cartoon"],
+    keywords_negative: ["live action","photography"],
     name: "Animator / VFX Artist",
     aliases: ["animator", "animation", "vfx", "visual effects", "3d animation", "2d animation", "motion graphics", "cgi", "pixar", "dreamworks"],
     streams: ["Arts", "Commerce", "PCM"],
@@ -632,6 +715,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   photographer: {
     id: "photographer",
     category: "Other",
+    careerType: "C",
+    domain: "creative_media",
+    semantic_tags: ["photography","camera","photo","portrait","wedding photography"],
+    keywords_negative: ["videography","cinematography"],
     name: "Professional Photographer",
     aliases: ["photographer", "photography", "photojournalist", "wedding photographer", "fashion photographer", "wildlife photographer", "commercial photographer"],
     streams: ["Arts", "Commerce", "PCM", "PCB"],
@@ -663,6 +750,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   interior_designer: {
     id: "interior_designer",
     category: "Other",
+    careerType: "C",
+    domain: "design",
+    semantic_tags: ["interior design","home decor","space design","furniture"],
+    keywords_negative: ["architecture","civil engineering"],
     name: "Interior Designer",
     aliases: ["interior designer", "interior design", "interior decoration", "space design", "architectural design", "home design"],
     streams: ["Arts", "PCM"],
@@ -694,6 +785,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   architect_urban_planner: {
     id: "architect_urban_planner",
     category: "Other",
+    careerType: "A",
+    domain: "design",
+    semantic_tags: ["urban planning","city planning","town planning","infrastructure"],
+    keywords_negative: ["software architecture","cloud computing"],
     name: "Architect / Urban Planner",
     aliases: ["architect", "architecture", "urban planner", "urban design", "b.arch", "m.arch", "urban planning", "landscape architect"],
     streams: ["PCM", "Arts"],
@@ -728,6 +823,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   writer_author: {
     id: "writer_author",
     category: "Other",
+    careerType: "C",
+    domain: "creative_media",
+    semantic_tags: ["writing","author","novelist","content writer","screenwriter"],
+    keywords_negative: ["typing","data entry"],
     name: "Writer / Author / Content Strategist",
     aliases: ["writer", "author", "novelist", "content writer", "copywriter", "screenwriter", "content creator", "blogger", "poet"],
     streams: ["Arts", "Commerce", "PCM", "PCB"],
@@ -760,8 +859,12 @@ export const CAREERS: Record<string, CareerProfile> = {
   performing_artist: {
     id: "performing_artist",
     category: "Creative",
+    careerType: "C",
+    domain: "creative_media",
+    semantic_tags: ["acting","theater","drama","dance","music","performance"],
+    keywords_negative: ["sports","athletics"],
     name: "Performing Artist (Theatre/Dance/Classical Arts)",
-    aliases: ["actor", "theatre", "dance", "classical dance", "bharatanatyam", "kathak", "odissi", "classical music", "carnatic", "hindustani", "performing arts", "musician", "music", "singer", "producer", "band"],
+    aliases: ["actor", "theatre", "dance", "classical dance", "bharatanatyam", "kathak", "odissi", "classical music", "carnatic", "hindustani", "performing arts", "musician", "music", "singer", "producer", "band", "filmmaker", "film director", "director", "film"],
     streams: ["Arts", "Commerce", "PCM", "PCB"],
     minMarks: 35,
     minMarksStretch: 25,
@@ -795,6 +898,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   teacher_educator: {
     id: "teacher_educator",
     category: "Other",
+    careerType: "A",
+    domain: "education_sports",
+    semantic_tags: ["teaching","education","professor","school","tutor"],
+    keywords_negative: ["student","learner"],
     name: "Teacher / Educator / EdTech Professional",
     aliases: ["teacher", "educator", "teaching", "professor", "edtech", "education", "b.ed", "tutor", "coaching"],
     streams: ["Arts", "Commerce", "PCM", "PCB"],
@@ -826,6 +933,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   social_worker: {
     id: "social_worker",
     category: "Other",
+    careerType: "C",
+    domain: "law_government",
+    semantic_tags: ["social work","ngo","community","welfare","nonprofit"],
+    keywords_negative: ["software engineer","social media"],
     name: "Social Worker / Development Professional",
     aliases: ["social worker", "ngo", "development", "social work", "community development", "msw", "nonprofit", "un", "unicef", "world bank"],
     streams: ["Arts", "Commerce", "PCM", "PCB"],
@@ -861,6 +972,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   fashion_entrepreneur: {
     id: "fashion_entrepreneur",
     category: "Other",
+    careerType: "C",
+    domain: "entrepreneurship",
+    semantic_tags: ["fashion","clothing","brand","startup","boutique","apparel"],
+    keywords_negative: ["fashion model","modeling"],
     name: "Fashion Entrepreneur / Textile Business",
     aliases: ["fashion business", "clothing brand", "textile", "garment", "fashion entrepreneur", "boutique", "ethnic wear", "handloom"],
     streams: ["Commerce", "Arts", "Vocational"],
@@ -891,6 +1006,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   electrician_electrical_engineer: {
     id: "electrician_electrical_engineer",
     category: "Other",
+    careerType: "A",
+    domain: "technology",
+    semantic_tags: ["electrical","wiring","power","circuits","electrical engineering"],
+    keywords_negative: ["electronics","computer science"],
     name: "Electrical Engineer / Renewable Energy Engineer",
     aliases: ["electrical engineer", "electrical", "power systems", "renewable energy", "solar", "wind energy", "ev", "electric vehicles", "power engineer"],
     streams: ["PCM"],
@@ -922,6 +1041,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   civil_engineer: {
     id: "civil_engineer",
     category: "Technical",
+    careerType: "A",
+    domain: "technology",
+    semantic_tags: ["civil engineering","construction","bridges","roads","structural"],
+    keywords_negative: ["civil services","ias","upsc"],
     name: "Civil Engineer / Infrastructure Developer",
     aliases: ["civil engineer", "civil", "construction", "structural engineer", "infrastructure", "roads", "bridges", "smart cities"],
     streams: ["PCM"],
@@ -957,6 +1080,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   diplomat_international_relations: {
     id: "diplomat_international_relations",
     category: "Hybrid",
+    careerType: "B",
+    domain: "law_government",
+    semantic_tags: ["diplomacy","foreign affairs","embassy","international relations","ifs"],
+    keywords_negative: ["domestic politics","local government"],
     name: "Diplomat / International Relations Professional",
     aliases: ["diplomat", "ifs", "foreign service", "international relations", "united nations", "diplomacy", "embassy", "foreign affairs"],
     streams: ["Arts", "Commerce", "PCM", "PCB"],
@@ -989,6 +1116,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   marine_biologist: {
     id: "marine_biologist",
     category: "Research",
+    careerType: "A",
+    domain: "science_research",
+    semantic_tags: ["marine biology","ocean","sea life","coral","deep sea","aquatic","oceanography"],
+    keywords_negative: ["marine engineer","marine engineering","navy","shipping","merchant navy","naval architecture"],
     name: "Marine Biologist / Ocean Scientist",
     aliases: ["marine biology", "marine biologist", "oceanography", "ocean science", "marine ecology", "coral reef", "deep sea"],
     streams: ["PCB", "PCM"],
@@ -1021,6 +1152,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   space_scientist: {
     id: "space_scientist",
     category: "Research",
+    careerType: "A",
+    domain: "science_research",
+    semantic_tags: ["space","isro","nasa","astrophysics","rocket","satellite"],
+    keywords_negative: ["astrology","horoscope"],
     name: "Space Scientist / Aerospace Engineer",
     aliases: ["space", "aerospace", "rocket scientist", "isro", "nasa", "spacecraft", "satellite", "astrophysics", "aerospace engineer"],
     streams: ["PCM"],
@@ -1053,6 +1188,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   yoga_wellness_instructor: {
     id: "yoga_wellness_instructor",
     category: "Other",
+    careerType: "C",
+    domain: "healthcare",
+    semantic_tags: ["yoga","wellness","meditation","fitness","holistic health"],
+    keywords_negative: ["gym trainer","bodybuilding"],
     name: "Yoga Teacher / Wellness Professional",
     aliases: ["yoga", "yoga teacher", "wellness", "meditation", "mindfulness", "ayurveda wellness", "health coach", "yoga instructor"],
     streams: ["Arts", "PCB", "Commerce", "PCM"],
@@ -1083,6 +1222,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   sports_management: {
     id: "sports_management",
     category: "Other",
+    careerType: "A",
+    domain: "education_sports",
+    semantic_tags: ["sports management","sports business","event management","sports marketing"],
+    keywords_negative: ["playing sports","athlete","cricketer"],
     name: "Sports Manager / Sports Business Professional",
     aliases: ["sports management", "sports marketing", "sports business", "ipl manager", "sports agent", "sports analytics", "esports management"],
     streams: ["Commerce", "Arts", "PCM"],
@@ -1118,6 +1261,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   startup_founder: {
     id: "startup_founder",
     category: "Entrepreneurial",
+    careerType: "C",
+    domain: "entrepreneurship",
+    semantic_tags: ["startup","entrepreneur","business","founder","venture"],
+    keywords_negative: ["employee","job seeker"],
     name: "Tech Startup Founder / Entrepreneur",
     aliases: ["startup", "founder", "entrepreneur", "ceo", "build company", "own business", "unicorn",
               "y combinator", "venture", "vc", "saas", "bootstrapped", "elon musk", "startup founder",
@@ -1150,6 +1297,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   product_manager: {
     id: "product_manager",
     category: "Technical",
+    careerType: "A",
+    domain: "technology",
+    semantic_tags: ["product management","pm","product owner","roadmap","agile"],
+    keywords_negative: ["project manager","construction manager"],
     name: "Product Manager",
     aliases: ["product manager", "pm", "product lead", "apm", "associate product manager", "tech pm",
               "product management", "product owner", "product strategy", "build products"],
@@ -1181,6 +1332,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   ai_researcher: {
     id: "ai_researcher",
     category: "Research",
+    careerType: "A",
+    domain: "technology",
+    semantic_tags: ["artificial intelligence","ai","deep learning","neural networks","research"],
+    keywords_negative: ["ai artist","ai tool user"],
     name: "AI/ML Researcher",
     aliases: ["ai researcher", "machine learning", "deep learning", "artificial intelligence researcher",
               "ml engineer", "agi", "neural networks", "nlp", "computer vision", "reinforcement learning",
@@ -1213,6 +1368,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   quant_finance: {
     id: "quant_finance",
     category: "Financial",
+    careerType: "A",
+    domain: "finance",
+    semantic_tags: ["quantitative","trading","algorithms","finance","hedge fund","derivatives"],
+    keywords_negative: ["accounting","ca","banking clerk","insurance","quantum computing","quantum physics","quantum mechanics","quantum"],
     name: "Quantitative Finance Analyst",
     aliases: ["quant", "quantitative analyst", "quantitative finance", "algorithmic trading", "algo trading",
               "hedge fund", "wall street", "trading", "financial engineer", "quant trader",
@@ -1245,6 +1404,10 @@ export const CAREERS: Record<string, CareerProfile> = {
   civil_services: {
     id: "civil_services",
     category: "Government",
+    careerType: "B",
+    domain: "law_government",
+    semantic_tags: ["ias","ips","upsc","civil services","government","administration","bureaucracy"],
+    keywords_negative: ["civil engineer","construction","building"],
     name: "IAS/IPS Officer (Civil Services)",
     aliases: ["ias", "ips", "civil services", "upsc", "collector", "bureaucrat", "government officer",
               "district magistrate", "dm", "commissioner", "administrator", "public administration",

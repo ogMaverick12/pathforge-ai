@@ -166,6 +166,12 @@ Schema:
     const finalResults: GeneratedResults = {
       careerId: mainCareerId,
       careerName: mainCareer.name,
+      careerType: mainCareer.careerType || "A",
+      careerDescription: mainCareer.description,
+      honestTruth: mainCareer.realityNote,
+      confidence: 0.7,
+      confidenceLabel: "Good",
+      streamEligibility: { status: "ELIGIBLE", reason: "AI-generated path" },
       paths: finalPaths,
       realityFlags: generateRealityFlags(profile, mainCareerId),
       scholarships: matchScholarships(profile),

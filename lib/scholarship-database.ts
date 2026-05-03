@@ -16,6 +16,8 @@ export interface Scholarship {
     abroadRequired?: boolean;
     gender?: "female" | "male";
   };
+  eligible_domains?: string[];
+  ineligible_domains?: string[];
   matchFactors: string[];
   url: string;
   deadline: string;
@@ -32,6 +34,8 @@ export const SCHOLARSHIPS: Scholarship[] = [
     value: "₹80,000/year",
     renewable: "5 years",
     criteria: { streams: ["PCM", "PCB"], minMarks: 80, classLevel: ["11", "12", "Dropper"] },
+    eligible_domains: ["science_research", "healthcare"],
+    ineligible_domains: ["technology", "finance", "creative_media", "law_government", "entrepreneurship", "education_sports"],
     matchFactors: ["science_stream", "high_marks", "india_study"],
     url: "https://inspire-dst.gov.in",
     deadline: "October (tentative)",
@@ -46,6 +50,8 @@ export const SCHOLARSHIPS: Scholarship[] = [
     value: "₹5,000–7,000/month",
     renewable: "5 years",
     criteria: { streams: ["PCM", "PCB"], minMarks: 85, classLevel: ["11", "12"] },
+    eligible_domains: ["science_research"],
+    ineligible_domains: ["technology", "finance", "creative_media", "law_government", "education_sports"],
     matchFactors: ["science_stream", "high_marks", "research_interest"],
     url: "https://kvpy.iisc.ac.in",
     deadline: "August",
@@ -248,6 +254,126 @@ export const SCHOLARSHIPS: Scholarship[] = [
     competitionLevel: "moderate",
     region: "global",
     description: "Korean government scholarship covering Korean language training + UG/PG at top Korean universities including KAIST, SNU."
+  },
+  // ── GAP-3: India-Specific Scholarships ──────────────────────
+  {
+    id: "ntse",
+    name: "NTSE (National Talent Search Examination)",
+    org: "NCERT, Govt of India",
+    value: "₹1,250/month (UG), ₹2,000/month (PG)",
+    renewable: "Until PhD completion",
+    criteria: { minMarks: 75, classLevel: ["10"] },
+    matchFactors: ["high_marks", "india_study", "merit_based"],
+    url: "https://ncert.nic.in/ntse.php",
+    deadline: "November",
+    competitionLevel: "high",
+    region: "india",
+    description: "India's most prestigious school-level scholarship. Stage I (state) + Stage II (national). Funds all the way through PhD."
+  },
+  {
+    id: "csss",
+    name: "Central Sector Scheme of Scholarships (CSSS)",
+    org: "Ministry of Education, India",
+    value: "₹10,000–20,000/year",
+    renewable: "3 years (UG)",
+    criteria: { minMarks: 80, maxIncome: 800000 },
+    matchFactors: ["high_marks", "low_income", "india_study"],
+    url: "https://scholarships.gov.in",
+    deadline: "October",
+    competitionLevel: "moderate",
+    region: "india",
+    description: "For students above 80th percentile in Class 12 boards with family income below ₹8 LPA."
+  },
+  {
+    id: "pmss_defence",
+    name: "Prime Minister's Scholarship Scheme (PMSS)",
+    org: "Ministry of Defence, India",
+    value: "₹2,500/month (boys), ₹3,000/month (girls)",
+    renewable: "Duration of course",
+    criteria: { minMarks: 60 },
+    matchFactors: ["defence_background", "india_study"],
+    url: "https://ksb.gov.in/PMSS.htm",
+    deadline: "October",
+    competitionLevel: "moderate",
+    region: "india",
+    description: "For wards/widows of ex-servicemen and ex-coast guard personnel pursuing professional degrees."
+  },
+  {
+    id: "aicte_pragati",
+    name: "AICTE Pragati Scholarship",
+    org: "AICTE, Govt of India",
+    value: "₹50,000/year",
+    renewable: "4 years",
+    criteria: { gender: "female", minMarks: 60, maxIncome: 800000 },
+    eligible_domains: ["technology", "design"],
+    ineligible_domains: ["finance", "law_government", "creative_media", "education_sports", "science_research"],
+    matchFactors: ["female_student", "engineering", "low_income"],
+    url: "https://www.aicte-india.org/schemes/students-development-schemes",
+    deadline: "December",
+    competitionLevel: "moderate",
+    region: "india",
+    description: "For girl students in AICTE-approved technical institutions. Covers tuition + ₹2,000/month."
+  },
+  {
+    id: "icai_merit",
+    name: "ICAI Merit Scholarship",
+    org: "Institute of Chartered Accountants of India",
+    value: "₹2,500/month",
+    renewable: "Duration of CA course",
+    criteria: { streams: ["Commerce", "PCM", "Arts"], minMarks: 55 },
+    eligible_domains: ["finance"],
+    ineligible_domains: ["technology", "creative_media", "healthcare", "education_sports", "science_research"],
+    matchFactors: ["ca_aspirant", "merit_based"],
+    url: "https://www.icai.org",
+    deadline: "Ongoing (per attempt)",
+    competitionLevel: "high",
+    region: "india",
+    description: "For CA students who clear Foundation/Intermediate in first attempt with top rank."
+  },
+  {
+    id: "dst_wise",
+    name: "DST WISE Fellowship (Women Scientists)",
+    org: "DST, Govt of India",
+    value: "₹55,000/month (PhD), ₹40,000/month (Post-Doc)",
+    renewable: "3 years",
+    criteria: { gender: "female", minMarks: 60 },
+    eligible_domains: ["science_research", "technology", "healthcare"],
+    ineligible_domains: ["finance", "law_government", "creative_media"],
+    matchFactors: ["female_student", "research_interest", "science_stream"],
+    url: "https://dst.gov.in/scientific-programmes/scientific-engineering-research/women-scientists-programs",
+    deadline: "September",
+    competitionLevel: "high",
+    region: "india",
+    description: "For women scientists who had a career break. Supports re-entry into S&T research."
+  },
+  {
+    id: "nlu_merit",
+    name: "NLU Merit-cum-Means Scholarship",
+    org: "National Law Universities",
+    value: "Full tuition waiver + stipend",
+    renewable: "5 years (BA-LLB)",
+    criteria: { minMarks: 75 },
+    eligible_domains: ["law_government"],
+    ineligible_domains: ["technology", "finance", "creative_media", "healthcare", "science_research"],
+    matchFactors: ["clat_rank", "law_aspirant", "merit_based"],
+    url: "https://consortiumofnlus.ac.in",
+    deadline: "May (after CLAT)",
+    competitionLevel: "elite",
+    region: "india",
+    description: "Top CLAT rankers at NLUs get full tuition waiver. Available at NLSIU, NALSAR, NLU-D, NUJS etc."
+  },
+  {
+    id: "state_post_matric",
+    name: "State Post-Matric Scholarship (SC/ST/OBC)",
+    org: "State Governments of India",
+    value: "Full tuition + maintenance allowance",
+    renewable: "Duration of course",
+    criteria: { minMarks: 50 },
+    matchFactors: ["reserved_category", "low_income", "india_study"],
+    url: "https://scholarships.gov.in",
+    deadline: "Varies by state (Aug–Nov)",
+    competitionLevel: "low",
+    region: "india",
+    description: "Available in all Indian states for SC/ST/OBC students. Covers tuition, maintenance, and book allowance."
   }
 ];
-

@@ -174,7 +174,48 @@ function ResultsInner() {
           <p style={{ color: 'var(--text-dim)', marginTop: 8 }}>
             {profile.stream} · Class {profile.class_level} · {profile.marks}% · Dream: <strong style={{ color: 'var(--ember)' }}>{results.careerName}</strong>
           </p>
+          {/* v2.0: Confidence Badge */}
+          {results.confidence !== undefined && (
+            <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 8, padding: '4px 14px', borderRadius: 20, background: results.confidence >= 0.7 ? 'rgba(0,200,100,0.12)' : results.confidence >= 0.4 ? 'rgba(255,180,0,0.12)' : 'rgba(255,60,60,0.12)', border: `1px solid ${results.confidence >= 0.7 ? 'var(--success)' : results.confidence >= 0.4 ? 'var(--warning)' : 'var(--danger)'}` }}>
+              <span style={{ fontSize: 14 }}>{results.confidence >= 0.7 ? '🟢' : results.confidence >= 0.4 ? '🟡' : '🔴'}</span>
+              <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: results.confidence >= 0.7 ? 'var(--success)' : results.confidence >= 0.4 ? 'var(--warning)' : 'var(--danger)' }}>
+                {results.confidenceLabel || 'N/A'} confidence match
+              </span>
+            </div>
+          )}
         </header>
+
+        {/* v2.0: Career Description + Honest Truth (GAP-6) */}
+        {(results.careerDescription || results.honestTruth) && (
+          <section className="stagger" style={{ marginTop: 32 }}>
+            <p className="section-label">📋 ABOUT THIS CAREER</p>
+            {results.careerDescription && (
+              <div className="card" style={{ marginBottom: 16 }}>
+                <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-dim)' }}>{results.careerDescription}</p>
+              </div>
+            )}
+            {results.honestTruth && (
+              <div className="card card-warning" style={{ borderLeft: '4px solid var(--warning)' }}>
+                <h4 style={{ fontFamily: 'var(--font-display)', fontSize: 14, letterSpacing: '0.05em', color: 'var(--warning)', marginBottom: 6 }}>
+                  ⚡ HONEST TRUTH
+                </h4>
+                <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-dim)' }}>{results.honestTruth}</p>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* v2.0: Stream Eligibility */}
+        {results.streamEligibility && results.streamEligibility.status !== 'ELIGIBLE' && (
+          <section className="stagger" style={{ marginTop: 24 }}>
+            <div className={`card ${results.streamEligibility.status === 'INELIGIBLE' ? 'card-danger' : 'card-success'}`}>
+              <h4 style={{ fontFamily: 'var(--font-display)', fontSize: 14, letterSpacing: '0.05em', marginBottom: 6, color: results.streamEligibility.status === 'INELIGIBLE' ? 'var(--danger)' : 'var(--success)' }}>
+                {results.streamEligibility.status === 'INELIGIBLE' ? '🚫' : '✅'} STREAM ELIGIBILITY: {results.streamEligibility.status}
+              </h4>
+              <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-dim)' }}>{results.streamEligibility.reason}</p>
+            </div>
+          </section>
+        )}
 
         {/* Reality Check */}
         {results.realityFlags.length > 0 && (
@@ -182,9 +223,9 @@ function ResultsInner() {
             <p className="section-label">⚠️ REALITY CHECK</p>
             <div className="flags-grid">
               {results.realityFlags.map((flag, i) => (
-                <div key={i} className={`card ${flag.type === 'danger' ? 'card-danger' : flag.type === 'success' ? 'card-success' : 'card-warning'}`}>
-                  <h4 style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '0.05em', marginBottom: 8, color: flag.type === 'danger' ? 'var(--danger)' : flag.type === 'success' ? 'var(--success)' : 'var(--warning)' }}>
-                    {flag.type === 'danger' ? '🚨' : flag.type === 'success' ? '✅' : '⚠️'} {flag.title}
+                <div key={i} className={`card ${flag.type === 'danger' ? 'card-danger' : flag.type === 'success' ? 'card-success' : flag.type === 'info' ? 'card-info' : 'card-warning'}`}>
+                  <h4 style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '0.05em', marginBottom: 8, color: flag.type === 'danger' ? 'var(--danger)' : flag.type === 'success' ? 'var(--success)' : flag.type === 'info' ? 'var(--ember)' : 'var(--warning)' }}>
+                    {flag.type === 'danger' ? '🚨' : flag.type === 'success' ? '✅' : flag.type === 'info' ? 'ℹ️' : '⚠️'} {flag.title}
                   </h4>
                   <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-dim)' }}>{flag.message}</p>
                 </div>
@@ -216,6 +257,87 @@ function ResultsInner() {
             ))}
           </div>
         </section>
+
+        {/* v2.0: Exam Roadmap (Framework B) */}
+        {results.examRoadmap && (
+          <section className="stagger" style={{ marginTop: 48 }}>
+            <p className="section-label">📝 EXAM ROADMAP — {results.examRoadmap.examName}</p>
+            <div className="card" style={{ borderLeft: '4px solid var(--ember)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 20 }}>
+                <div>
+                  <span style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>Eligibility</span>
+                  <p style={{ fontSize: 14, color: 'var(--text)', marginTop: 4 }}>{results.examRoadmap.eligibility}</p>
+                </div>
+                <div>
+                  <span style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>Attempts</span>
+                  <p style={{ fontSize: 14, color: 'var(--text)', marginTop: 4 }}>{results.examRoadmap.attempts}</p>
+                </div>
+                <div>
+                  <span style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>Your Probability</span>
+                  <p style={{ fontSize: 14, color: 'var(--ember)', marginTop: 4, fontWeight: 700 }}>{results.examRoadmap.clearingProbability}%</p>
+                </div>
+              </div>
+              {/* National Base Rate */}
+              <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(255,180,0,0.08)', border: '1px solid rgba(255,180,0,0.2)', marginBottom: 16 }}>
+                <span style={{ fontSize: 11, color: 'var(--warning)', fontFamily: 'var(--font-mono)' }}>📊 NATIONAL SUCCESS RATE</span>
+                <p style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 4 }}>{results.examRoadmap.examBaseRate}</p>
+              </div>
+              {/* Phases */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {results.examRoadmap.phases.map((phase, i) => (
+                  <div key={i} style={{ padding: '12px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <span style={{ fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--ember)' }}>PHASE {i + 1}: {phase.name}</span>
+                      <span style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>{phase.duration}</span>
+                    </div>
+                    <p style={{ fontSize: 12, color: 'var(--text-dim)' }}>{phase.subjects.join(', ')}</p>
+                  </div>
+                ))}
+              </div>
+              {/* Reality Note */}
+              <p style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 16, fontStyle: 'italic' }}>⚡ {results.examRoadmap.realityNote}</p>
+            </div>
+          </section>
+        )}
+
+        {/* v2.0: Portfolio Roadmap (Framework C) */}
+        {results.portfolioRoadmap && (
+          <section className="stagger" style={{ marginTop: 48 }}>
+            <p className="section-label">🎨 PORTFOLIO & SKILL ROADMAP</p>
+            <div className="card" style={{ borderLeft: '4px solid var(--success)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 20 }}>
+                <div>
+                  <span style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>Timeline</span>
+                  <p style={{ fontSize: 14, color: 'var(--text)', marginTop: 4 }}>{results.portfolioRoadmap.timelineMonths} months</p>
+                </div>
+                <div>
+                  <span style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>Entry Income</span>
+                  <p style={{ fontSize: 14, color: 'var(--ember)', marginTop: 4 }}>{results.portfolioRoadmap.incomeReality}</p>
+                </div>
+              </div>
+              {/* Skill Acquisition Path */}
+              <p style={{ fontSize: 12, fontFamily: 'var(--font-display)', color: 'var(--text)', letterSpacing: '0.05em', marginBottom: 12 }}>SKILL ACQUISITION PATH</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {results.portfolioRoadmap.skillAcquisitionPath.map((skill, i) => (
+                  <div key={i} style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--success)' }}>{skill.skill}</span>
+                      <span style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>{skill.duration}</span>
+                    </div>
+                    <p style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 4 }}>📚 {skill.resource} → 📦 {skill.deliverable}</p>
+                  </div>
+                ))}
+              </div>
+              {/* Portfolio Milestones */}
+              <p style={{ fontSize: 12, fontFamily: 'var(--font-display)', color: 'var(--text)', letterSpacing: '0.05em', marginTop: 16, marginBottom: 8 }}>PORTFOLIO MILESTONES</p>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {results.portfolioRoadmap.portfolioMilestones.map((m, i) => (
+                  <li key={i} style={{ fontSize: 13, color: 'var(--text-dim)', padding: '4px 0' }}>✅ {m}</li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
 
         {/* Comparison Grid */}
         <section style={{ marginTop: 48 }}>

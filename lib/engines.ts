@@ -287,16 +287,145 @@ function generateMilestones(profile: ForgeProfile, careerId: string, mode: strin
 }
 
 
-// ─── MAIN RESULTS GENERATOR ───────────────────────────────────────────────────
-export function generateResults(profile: ForgeProfile): GeneratedResults {
-  const topCareers = retrieveRelevantCareers(profile, 3);
-  const distinctCareerIds = topCareers.length > 0 ? topCareers.map(c => c.id) : ["software_engineer", "data_scientist", "chartered_accountant"];
-  const mainCareerId = distinctCareerIds[0];
-  const career = CAREERS[mainCareerId];
+// ─── CONSTRAINT HARD FILTERS (GAP-5) ──────────────────────────────────────────
+function applyConstraintFilters(institutions: InstitutionData[], profile: ForgeProfile): InstitutionData[] {
+  let filtered = [...institutions];
 
+  // abroad_open: "no" → remove ALL foreign institutions
+  if (profile.abroad_open === "no") {
+    filtered = filtered.filter(i => i.type !== "global");
+  }
+
+  // loan_open: "no" → remove institutions exceeding budget
+  if (profile.loan_open === "no") {
+    const budgetMap: Record<string, number> = {
+      "<1L": 100000, "1-3L": 300000, "3-6L": 600000, "6-12L": 1200000,
+      "12-25L": 2500000, "25L+": 5000000, "full_scholarship": 0
+    };
+    const maxBudget = budgetMap[profile.budget] || 600000;
+    const tolerance = maxBudget <= 300000 ? 1.0 : 1.2;
+    filtered = filtered.filter(i => i.fees_per_year <= maxBudget * tolerance);
+  }
+
+  // Fallback: if all filtered out, return cheapest 3 from original list
+  return filtered.length > 0 ? filtered : [...institutions].sort((a, b) => a.fees_per_year - b.fees_per_year).slice(0, 3);
+}
+
+// ─── EXAM BASE RATES (GAP-2) ─────────────────────────────────────────────────
+const EXAM_BASE_RATES: Record<string, string> = {
+  "UPSC Civil Services Examination": "< 0.1% final selection rate (~10 lakh applicants, ~1000 selected)",
+  "NEET-UG": "~10% get government medical seats (~20 lakh applicants)",
+  "JEE Advanced": "~2.5% qualify from JEE Mains (~10 lakh → ~25,000)",
+  "JEE Mains": "~25% qualify for JEE Advanced counselling",
+  "CLAT": "~5% get top NLU seats (~60,000 applicants, ~3000 NLU seats)",
+  "CA Final": "~10-15% pass rate per attempt",
+  "CA Foundation": "~30-35% pass rate per attempt",
+  "GATE": "~15-17% qualify (varies by branch)",
+  "NDA": "~3-4% selection rate (~4.5 lakh applicants, ~400 selected per cycle)",
+  "CAT": "~1% get IIM-A/B/C calls (~2.5 lakh applicants)",
+  "NEET-PG": "~50% qualify, ~15% get government seats",
+  "UGC NET": "~6-8% qualify for Assistant Professor",
+  "NIFT Entrance": "~5% selection rate",
+  "NID DAT": "~3% selection rate",
+};
+
+// ─── FRAMEWORK B: EXAM ROADMAP BUILDER ────────────────────────────────────────
+import type { ExamRoadmap, ExamPhase, PortfolioRoadmap } from './types';
+import { validateStreamEligibility } from './career-types';
+import { retrieveRelevantCareersWithScores, retrieveRelevantScholarships } from './rag-engine';
+
+function buildExamRoadmap(career: CareerProfile, profile: ForgeProfile): ExamRoadmap | undefined {
+  if (career.careerType !== "B" || !career.examRequired) return undefined;
+  
+  const phases: ExamPhase[] = career.domains.map((d, i) => ({
+    name: d.name,
+    duration: `${d.timeMonths} months`,
+    subjects: d.skills,
+    resources: [d.topResource],
+    milestone: `Complete ${d.name} phase`
+  }));
+
+  const baseRate = EXAM_BASE_RATES[career.examRequired] || "National statistics not available";
+  
+  return {
+    examName: career.examRequired,
+    eligibility: career.streams.includes(profile.stream) 
+      ? `Your ${profile.stream} stream is eligible` 
+      : `${career.examRequired} typically requires: ${career.streams.join(", ")}`,
+    attempts: career.examRequired.includes("UPSC") ? "6 attempts (General), 9 (OBC), unlimited (SC/ST) until age 32/35/37" 
+      : career.examRequired.includes("CA") ? "Unlimited attempts" 
+      : "As per exam rules",
+    phases,
+    clearingProbability: calculateProbability(profile, career.id, "balanced"),
+    examBaseRate: baseRate,
+    backupPlan: career.domains.find(d => d.contingency)?.contingency || "Consider adjacent careers if exam doesn't work out within 3 attempts.",
+    topCoaching: [career.domains[0]?.topResource || "Self-study recommended"],
+    selfStudyResources: career.domains.map(d => d.topResource),
+    realityNote: career.realityNote
+  };
+}
+
+// ─── FRAMEWORK C: PORTFOLIO ROADMAP BUILDER ───────────────────────────────────
+function buildPortfolioRoadmap(career: CareerProfile): PortfolioRoadmap | undefined {
+  if (career.careerType !== "C") return undefined;
+  
+  return {
+    trainingInstitutions: career.topInstitutions.slice(0, 3).map(i => ({
+      name: i.name, type: i.type, cost: `₹${Math.round(i.fees_per_year / 1000)}K/year`
+    })),
+    skillAcquisitionPath: career.domains.map(d => ({
+      skill: d.name,
+      duration: `${d.timeMonths} months`,
+      resource: d.topResource,
+      deliverable: `${d.name} portfolio piece`
+    })),
+    portfolioMilestones: career.domains.map((d, i) => `Month ${career.domains.slice(0, i + 1).reduce((a, c) => a + c.timeMonths, 0)}: Complete ${d.name}`),
+    communityEntryPoints: [`Join ${career.name} communities`, "Build online presence", "Network with industry professionals"],
+    incomeReality: career.salaryRange.entry,
+    timelineMonths: career.domains.reduce((a, d) => a + d.timeMonths, 0)
+  };
+}
+
+// ─── MAIN RESULTS GENERATOR (v2.1 — All 7 GAPs fixed) ────────────────────────
+export function generateResults(profile: ForgeProfile): GeneratedResults {
+  // ── Step 1: Retrieve with confidence scores ──
+  const scoredResults = retrieveRelevantCareersWithScores(profile, 3);
+  
+  // ── Step 2: Handle low-confidence / no results (GAP-4) ──
+  let mainCareerId: string;
+  let confidence: number;
+  
+  if (scoredResults.length === 0 || scoredResults[0].score < 10) {
+    // Try broader search using deep_dream
+    const broadResults = profile.deep_dream 
+      ? retrieveRelevantCareersWithScores({ ...profile, dream_job: profile.deep_dream }, 3) 
+      : [];
+    
+    if (broadResults.length > 0 && broadResults[0].score >= 10) {
+      mainCareerId = broadResults[0].career.id;
+      confidence = 0.3;
+    } else {
+      // True fallback — pick closest match but flag as low confidence
+      mainCareerId = scoredResults[0]?.career.id || "software_engineer";
+      confidence = 0.1;
+    }
+  } else {
+    mainCareerId = scoredResults[0].career.id;
+    confidence = Math.min(scoredResults[0].score / 100, 1.0);
+  }
+
+  const career = CAREERS[mainCareerId];
   if (!career) {
     return generateResults({ ...profile, dream_job: "software engineer" });
   }
+
+  // ── Step 3: Stream eligibility ──
+  const streamResult = validateStreamEligibility(profile.stream, mainCareerId);
+
+  // ── Step 4: Get institutions with constraint filters (GAP-5) ──
+  const distinctCareerIds = scoredResults.length > 0 
+    ? scoredResults.map(r => r.career.id) 
+    : [mainCareerId];
 
   const paths: CareerPath[] = [];
   const labels = ["SAFE", "BALANCED", "DREAM"];
@@ -311,6 +440,10 @@ export function generateResults(profile: ForgeProfile): GeneratedResults {
     if (!c) return;
 
     let availableInstitutions = getInstitutions(cId);
+    
+    // Apply constraint hard filters (GAP-5)
+    availableInstitutions = applyConstraintFilters(availableInstitutions, profile);
+    
     if (profile.abroad_open === "only_abroad") {
       const globalOnly = availableInstitutions.filter(i => i.type === "global");
       if (globalOnly.length > 0) availableInstitutions = globalOnly;
@@ -358,15 +491,43 @@ export function generateResults(profile: ForgeProfile): GeneratedResults {
     });
   });
 
+  // ── Step 5: Build reality flags ──
+  const realityFlags = generateRealityFlags(profile, mainCareerId);
+  
+  // Add low confidence flag (GAP-4)
+  if (confidence < 0.3) {
+    realityFlags.unshift({
+      type: "info",
+      title: "LOW CONFIDENCE — CAREER NOT FULLY MAPPED",
+      message: `We couldn't find a precise match for "${profile.dream_job}". The results below are our best approximation. Try being more specific about your dream career.`
+    });
+  }
+
+  // ── Step 6: Build framework-specific roadmaps ──
+  const examRoadmap = buildExamRoadmap(career, profile);
+  const portfolioRoadmap = buildPortfolioRoadmap(career);
+
+  // ── Step 7: Match scholarships with domain gating ──
+  const scholarships = matchScholarships(profile);
+
   return {
     careerId: mainCareerId,
     careerName: career.name,
+    careerType: career.careerType,
+    careerDescription: career.description,
+    honestTruth: career.realityNote,
+    confidence,
+    confidenceLabel: confidence >= 0.7 ? "High" : confidence >= 0.4 ? "Good" : "Low",
+    streamEligibility: { 
+      status: streamResult.status as "ELIGIBLE" | "INELIGIBLE" | "STREAM_AGNOSTIC", 
+      reason: streamResult.reason 
+    },
     paths,
-    realityFlags: generateRealityFlags(profile, mainCareerId),
-    scholarships: matchScholarships(profile),
+    examRoadmap,
+    portfolioRoadmap,
+    realityFlags,
+    scholarships,
     skillDomains: career.domains,
     institutions: allInstitutions
   };
 }
-
-

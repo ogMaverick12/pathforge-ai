@@ -266,18 +266,19 @@ export function retrieveRelevantCareers(profile: ForgeProfile, topK = 8): Career
   const theme = analyzeTheme(deepDreamNorm || dreamJobNorm);
 
   // Score each career
-  const scores: { career: CareerProfile; score: number }[] = [];
+  const scores: { career: CareerProfile; score: number; matchSignals: string[] }[] = [];
 
   for (const [id, career] of Object.entries(CAREERS)) {
     let score = 0;
+    const matchSignals: string[] = [];
 
     // ── Signal 1: Alias match (direct keyword overlap) ──────
     const allAliases = [career.name.toLowerCase(), ...career.aliases];
     let bestAliasMatch = 0;
 
     for (const alias of allAliases) {
-      // Exact substring match (strongest signal)
-      if (dreamJobNorm.includes(alias) || alias.includes(dreamJobNorm)) {
+      // Exact substring match (strongest signal) — require alias >= 3 chars to prevent false positives
+      if (alias.length >= 3 && (dreamJobNorm.includes(alias) || alias.includes(dreamJobNorm))) {
         bestAliasMatch = Math.max(bestAliasMatch, 100);
       }
 
@@ -334,15 +335,45 @@ export function retrieveRelevantCareers(profile: ForgeProfile, topK = 8): Career
       }
     }
 
-    // ── Signal 6: Fit penalties (negative signals) ──────────
-    if (!career.streams.includes(profile.stream)) {
-      score -= 30; // Stream mismatch is serious
-    }
-    if (profile.marks < career.minMarksStretch - 15) {
-      score -= 20; // Hard to achieve with current marks
+    // ── Signal 6: Semantic tag match (v2.0) ───────────────────
+    if (career.semantic_tags && career.semantic_tags.length > 0) {
+      for (const tag of career.semantic_tags) {
+        const tagTokens = tag.toLowerCase().split(/\s+/);
+        if (tagTokens.every(t => inputTokens.includes(t))) {
+          score += 20;
+        }
+      }
     }
 
-    scores.push({ career, score });
+    // ── Signal 7: NEGATIVE keyword penalty (BUG-004 FIX) ────
+    // If the user's input matches a career's negative keywords,
+    // apply a heavy penalty to prevent cross-domain hallucinations.
+    if (career.keywords_negative && career.keywords_negative.length > 0) {
+      for (const negKw of career.keywords_negative) {
+        const negTokens = negKw.toLowerCase().split(/\s+/);
+        let negMatch = false;
+        if (negTokens.every(nt => inputTokens.includes(nt))) {
+          negMatch = true;
+        }
+        if (combinedInput.includes(negKw.toLowerCase())) {
+          negMatch = true;
+        }
+        if (negMatch) {
+          score -= 100;  // Hard penalty — effectively disqualifies
+          matchSignals.push(`NEGATIVE:${negKw}`);
+        }
+      }
+    }
+
+    // ── Signal 8: Fit penalties (stream, marks) ─────────────
+    if (!career.streams.includes(profile.stream)) {
+      score -= 30;
+    }
+    if (profile.marks < career.minMarksStretch - 15) {
+      score -= 20;
+    }
+
+    scores.push({ career, score, matchSignals });
   }
 
   // Sort by highest score (best match first)
@@ -353,15 +384,119 @@ export function retrieveRelevantCareers(profile: ForgeProfile, topK = 8): Career
 }
 
 /**
- * RAG Engine: Retrieves the top K most relevant scholarships.
+ * RAG Engine v2: Returns careers WITH scores for confidence calculation
  */
-export function retrieveRelevantScholarships(profile: ForgeProfile, topK = 5): Scholarship[] {
+export function retrieveRelevantCareersWithScores(profile: ForgeProfile, topK = 8): { career: CareerProfile; score: number; matchSignals: string[] }[] {
+  const dreamJobNorm = profile.dream_job.toLowerCase().trim();
+  const deepDreamNorm = (profile.deep_dream || '').toLowerCase().trim();
+  const combinedInput = `${dreamJobNorm} ${deepDreamNorm}`;
+  const allTokens = combinedInput.split(/[^a-z0-9]+/).filter(w => w.length > 1);
+
+  const detectedIntents: Intent[] = [];
+  for (const [intent, pattern] of Object.entries(INTENT_PATTERNS)) {
+    if (pattern.test(combinedInput)) {
+      detectedIntents.push(intent as Intent);
+    }
+  }
+
+  const theme = analyzeTheme(deepDreamNorm || dreamJobNorm);
+  const scores: { career: CareerProfile; score: number; matchSignals: string[] }[] = [];
+
+  for (const [id, career] of Object.entries(CAREERS)) {
+    let score = 0;
+    const matchSignals: string[] = [];
+
+    // Signal 1: Alias match
+    const allAliases = [career.name.toLowerCase(), ...career.aliases];
+    let bestAliasMatch = 0;
+    for (const alias of allAliases) {
+      if (alias.length >= 3 && (dreamJobNorm.includes(alias) || alias.includes(dreamJobNorm))) {
+        bestAliasMatch = Math.max(bestAliasMatch, 100);
+      }
+      const aliasTokens = alias.split(/[^a-z0-9]+/).filter(w => w.length > 1);
+      let matchCount = 0;
+      for (const at of aliasTokens) {
+        if (allTokens.includes(at)) matchCount++;
+      }
+      if (aliasTokens.length > 0) {
+        const overlapScore = (matchCount / aliasTokens.length) * 80;
+        bestAliasMatch = Math.max(bestAliasMatch, overlapScore);
+      }
+    }
+    score += bestAliasMatch;
+
+    // Signal 2: Semantic keyword mapping
+    let semanticBoost = 0;
+    for (const token of allTokens) {
+      const matchedCareers = SEMANTIC_KEYWORDS[token];
+      if (matchedCareers && matchedCareers.includes(id)) semanticBoost += 25;
+    }
+    for (let i = 0; i < allTokens.length - 1; i++) {
+      const bigram = `${allTokens[i]} ${allTokens[i + 1]}`;
+      const matchedCareers = SEMANTIC_KEYWORDS[bigram];
+      if (matchedCareers && matchedCareers.includes(id)) semanticBoost += 40;
+    }
+    score += Math.min(semanticBoost, 80);
+
+    // Signal 3: Intent classification
+    for (const intent of detectedIntents) {
+      if (INTENT_CAREER_BOOSTS[intent].includes(id)) score += 20;
+    }
+
+    // Signal 4: Theme analysis
+    if (theme !== 'none' && THEME_CATEGORY_BOOSTS[theme].includes(career.category)) score += 15;
+
+    // Signal 5: Priority weighting
+    if (profile.priorities) {
+      for (const priority of profile.priorities) {
+        const boostedCareers = PRIORITY_CAREER_MAP[priority];
+        if (boostedCareers && boostedCareers.includes(id)) score += 12;
+      }
+    }
+
+    // Signal 6: Semantic tag match
+    if (career.semantic_tags) {
+      for (const tag of career.semantic_tags) {
+        const tagTokens = tag.toLowerCase().split(/\s+/);
+        if (tagTokens.every(t => allTokens.includes(t))) score += 20;
+      }
+    }
+
+    // Signal 7: NEGATIVE keyword penalty (BUG-004)
+    if (career.keywords_negative) {
+      for (const negKw of career.keywords_negative) {
+        const negTokens = negKw.toLowerCase().split(/\s+/);
+        if (negTokens.every(nt => allTokens.includes(nt)) || combinedInput.includes(negKw.toLowerCase())) {
+          score -= 100;
+          matchSignals.push(`NEGATIVE:${negKw}`);
+        }
+      }
+    }
+
+    // Signal 8: Fit penalties
+    if (!career.streams.includes(profile.stream)) score -= 30;
+    if (profile.marks < career.minMarksStretch - 15) score -= 20;
+
+    scores.push({ career, score, matchSignals });
+  }
+
+  scores.sort((a, b) => b.score - a.score);
+  return scores.slice(0, topK);
+}
+
+/**
+ * RAG Engine: Retrieves scholarships with domain gating (BUG-006 FIX)
+ */
+export function retrieveRelevantScholarships(profile: ForgeProfile, domain?: string, topK = 5): Scholarship[] {
   const isAbroadOpen = profile.abroad_open === 'yes' || profile.abroad_open === 'if_funded' || profile.abroad_open === 'only_abroad';
 
   const matches = SCHOLARSHIPS.filter(s => {
     if (s.criteria.streams && !s.criteria.streams.includes(profile.stream)) return false;
     if (s.criteria.minMarks && profile.marks < s.criteria.minMarks - 10) return false;
     if (s.criteria.abroadRequired && !isAbroadOpen) return false;
+    // Domain gating (BUG-006)
+    if (domain && (s as any).eligible_domains && !(s as any).eligible_domains.includes(domain)) return false;
+    if (domain && (s as any).ineligible_domains && (s as any).ineligible_domains.includes(domain)) return false;
     return true;
   });
 
