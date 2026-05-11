@@ -1,0 +1,969 @@
+{
+  "summary": {
+    "total_tests": 110,
+    "successful": 110,
+    "failed": 0,
+    "exact_matches": 64,
+    "poor_matches": 44
+  },
+  "match_accuracy": {
+    "exact_count": 64,
+    "poor_matches": [
+      {
+        "testId": 5,
+        "career": "Cybersecurity Analyst",
+        "persona": "A",
+        "got": "cybersecurity_engineer",
+        "expected": "cybersecurity|software_engineer"
+      },
+      {
+        "testId": 8,
+        "career": "DevOps Engineer",
+        "persona": "A",
+        "got": "cloud_architect",
+        "expected": "cloud_devops|software_engineer"
+      },
+      {
+        "testId": 10,
+        "career": "Digital Forensics Investigator",
+        "persona": "A",
+        "got": "startup_founder",
+        "expected": "cybersecurity|software_engineer"
+      },
+      {
+        "testId": 16,
+        "career": "Ayurvedic Researcher (AYUSH track)",
+        "persona": "B",
+        "got": "ayurveda_practitioner",
+        "expected": "doctor_mbbs|pharmacist"
+      },
+      {
+        "testId": 22,
+        "career": "Nuclear Engineer (BARC pathway)",
+        "persona": "A",
+        "got": "software_engineer",
+        "expected": "space_scientist|research_scientist"
+      },
+      {
+        "testId": 23,
+        "career": "Petroleum Engineer",
+        "persona": "A",
+        "got": "software_engineer",
+        "expected": "civil_engineer|electrician_electrical_engineer"
+      },
+      {
+        "testId": 25,
+        "career": "Nanotechnology Engineer",
+        "persona": "A",
+        "got": "software_engineer",
+        "expected": "research_scientist"
+      },
+      {
+        "testId": 26,
+        "career": "Agricultural Engineer",
+        "persona": "A",
+        "got": "software_engineer",
+        "expected": "civil_engineer|research_scientist"
+      },
+      {
+        "testId": 27,
+        "career": "Environmental Engineer",
+        "persona": "A",
+        "got": "software_engineer",
+        "expected": "civil_engineer|research_scientist"
+      },
+      {
+        "testId": 28,
+        "career": "Marine Engineer",
+        "persona": "A",
+        "got": "software_engineer",
+        "expected": "marine_biologist|civil_engineer"
+      },
+      {
+        "testId": 29,
+        "career": "Textile Engineer",
+        "persona": "A",
+        "got": "software_engineer",
+        "expected": "fashion_entrepreneur"
+      },
+      {
+        "testId": 30,
+        "career": "Geotechnical Engineer",
+        "persona": "A",
+        "got": "software_engineer",
+        "expected": "civil_engineer"
+      },
+      {
+        "testId": 31,
+        "career": "Actuary",
+        "persona": "C",
+        "got": "startup_founder",
+        "expected": "quant_finance|chartered_accountant|data_scientist"
+      },
+      {
+        "testId": 35,
+        "career": "Insurance Underwriter",
+        "persona": "C",
+        "got": "writer_author",
+        "expected": "chartered_accountant|quant_finance"
+      },
+      {
+        "testId": 38,
+        "career": "Derivatives Trader",
+        "persona": "C",
+        "got": "startup_founder",
+        "expected": "quant_finance|data_scientist"
+      },
+      {
+        "testId": 50,
+        "career": "Legislative Drafting Specialist",
+        "persona": "E",
+        "got": "startup_founder",
+        "expected": "lawyer|civil_services"
+      },
+      {
+        "testId": 53,
+        "career": "Intelligence Analyst (RAW track)",
+        "persona": "F",
+        "got": "startup_founder",
+        "expected": "civil_services|diplomat_international_relations"
+      },
+      {
+        "testId": 56,
+        "career": "Urban Planner (Municipal Corp)",
+        "persona": "F",
+        "got": "architect_urban_planner",
+        "expected": "architect|civil_engineer"
+      },
+      {
+        "testId": 59,
+        "career": "Indian Statistical Service (ISS)",
+        "persona": "F",
+        "got": "diplomat_international_relations",
+        "expected": "data_scientist|civil_services"
+      },
+      {
+        "testId": 61,
+        "career": "Computational Linguist",
+        "persona": "D",
+        "got": "startup_founder",
+        "expected": "data_scientist|ai_researcher"
+      },
+      {
+        "testId": 62,
+        "career": "Science Journalist",
+        "persona": "D",
+        "got": "startup_founder",
+        "expected": "writer_author"
+      },
+      {
+        "testId": 68,
+        "career": "Brand Strategist",
+        "persona": "D",
+        "got": "fashion_entrepreneur",
+        "expected": "startup_founder|ui_ux_designer"
+      },
+      {
+        "testId": 72,
+        "career": "Synthetic Biology Designer",
+        "persona": "A",
+        "got": "marine_biologist",
+        "expected": "research_scientist|doctor_mbbs"
+      },
+      {
+        "testId": 76,
+        "career": "Precision Agriculture Technologist",
+        "persona": "A",
+        "got": "software_engineer",
+        "expected": "data_scientist|research_scientist"
+      },
+      {
+        "testId": 77,
+        "career": "Digital Health Architect",
+        "persona": "A",
+        "got": "yoga_wellness_instructor",
+        "expected": "doctor_mbbs|software_engineer"
+      },
+      {
+        "testId": 78,
+        "career": "Longevity / Anti-Aging Researcher",
+        "persona": "A",
+        "got": "ai_researcher",
+        "expected": "research_scientist|doctor_mbbs"
+      },
+      {
+        "testId": 80,
+        "career": "Ocean Data Scientist",
+        "persona": "A",
+        "got": "ai_researcher",
+        "expected": "marine_biologist|data_scientist"
+      },
+      {
+        "testId": 81,
+        "career": "Sommelier",
+        "persona": "A",
+        "got": "startup_founder",
+        "expected": "yoga_wellness_instructor"
+      },
+      {
+        "testId": 82,
+        "career": "Luthier (Instrument Maker)",
+        "persona": "A",
+        "got": "startup_founder",
+        "expected": "performing_artist"
+      },
+      {
+        "testId": 83,
+        "career": "Ethical Hacker / Bug Bounty Hunter",
+        "persona": "A",
+        "got": "cybersecurity_engineer",
+        "expected": "cybersecurity"
+      },
+      {
+        "testId": 84,
+        "career": "Antarctic Field Researcher",
+        "persona": "A",
+        "got": "ai_researcher",
+        "expected": "research_scientist|marine_biologist"
+      },
+      {
+        "testId": 85,
+        "career": "Sign Language Interpreter",
+        "persona": "A",
+        "got": "startup_founder",
+        "expected": "teacher_educator|social_worker"
+      },
+      {
+        "testId": 86,
+        "career": "Cryptographer (Pure Math track)",
+        "persona": "A",
+        "got": "blockchain_developer",
+        "expected": "data_scientist|cybersecurity|quant_finance"
+      },
+      {
+        "testId": 88,
+        "career": "Paleoclimatologist",
+        "persona": "A",
+        "got": "startup_founder",
+        "expected": "research_scientist|marine_biologist"
+      },
+      {
+        "testId": 91,
+        "career": "Brain-Computer Interface Engineer",
+        "persona": "A",
+        "got": "software_engineer",
+        "expected": "ai_researcher|research_scientist"
+      },
+      {
+        "testId": 92,
+        "career": "Asteroid Mining Logistics Planner",
+        "persona": "A",
+        "got": "architect_urban_planner",
+        "expected": "space_scientist"
+      },
+      {
+        "testId": 94,
+        "career": "Personal Genome Advisor",
+        "persona": "A",
+        "got": "startup_founder",
+        "expected": "doctor_mbbs|research_scientist"
+      },
+      {
+        "testId": 95,
+        "career": "Digital-Physical Infrastructure Architect",
+        "persona": "A",
+        "got": "cloud_architect",
+        "expected": "cloud_devops|architect"
+      },
+      {
+        "testId": 96,
+        "career": "Neuromorphic Chip Designer",
+        "persona": "A",
+        "got": "game_developer",
+        "expected": "ai_researcher|software_engineer"
+      },
+      {
+        "testId": 98,
+        "career": "Virtual Reality Therapist",
+        "persona": "A",
+        "got": "startup_founder",
+        "expected": "psychologist|game_developer"
+      },
+      {
+        "testId": 99,
+        "career": "Lab-Grown Food Scientist",
+        "persona": "A",
+        "got": "ai_researcher",
+        "expected": "research_scientist"
+      },
+      {
+        "testId": 100,
+        "career": "Exoplanet Atmospheric Researcher",
+        "persona": "A",
+        "got": "ai_researcher",
+        "expected": "space_scientist|research_scientist"
+      },
+      {
+        "testId": 105,
+        "career": "Quantum Computing Researcher",
+        "persona": "E",
+        "got": "startup_founder",
+        "expected": "ai_researcher|data_scientist|space_scientist"
+      },
+      {
+        "testId": 107,
+        "career": "Forensic Pathologist",
+        "persona": "D",
+        "got": "startup_founder",
+        "expected": "doctor_mbbs|research_scientist"
+      }
+    ]
+  },
+  "fallback_analysis": {
+    "startup_founder_count": 23,
+    "startup_founder_careers": [
+      "Digital Forensics Investigator",
+      "Actuary",
+      "Investment Banker",
+      "Venture Capital Analyst",
+      "Derivatives Trader",
+      "Legal Tech Entrepreneur",
+      "Legislative Drafting Specialist",
+      "Intelligence Analyst (RAW track)",
+      "Computational Linguist",
+      "Science Journalist",
+      "Climate Tech Entrepreneur",
+      "Sommelier",
+      "Luthier (Instrument Maker)",
+      "Sign Language Interpreter",
+      "FMCG Supply Chain Specialist",
+      "Paleoclimatologist",
+      "Personal Genome Advisor",
+      "Carbon Credit Market Maker",
+      "Virtual Reality Therapist",
+      "Investment Banker",
+      "Quantum Computing Researcher",
+      "Forensic Pathologist",
+      "Climate Tech Entrepreneur"
+    ],
+    "software_engineer_count": 17,
+    "software_engineer_careers": [
+      "Embedded Systems Engineer",
+      "Blockchain Developer",
+      "Robotics Engineer",
+      "Prompt Engineer / AI Interaction Designer",
+      "Nuclear Engineer (BARC pathway)",
+      "Petroleum Engineer",
+      "Mechatronics Engineer",
+      "Nanotechnology Engineer",
+      "Agricultural Engineer",
+      "Environmental Engineer",
+      "Marine Engineer",
+      "Textile Engineer",
+      "Geotechnical Engineer",
+      "Music Technology Engineer (Audio DSP)",
+      "Precision Agriculture Technologist",
+      "Brain-Computer Interface Engineer",
+      "Aerospace Engineer"
+    ]
+  },
+  "confidence_distribution": {
+    "high": 73,
+    "good": 15,
+    "low": 22,
+    "low_confidence_details": [
+      {
+        "testId": 10,
+        "career": "Digital Forensics Investigator",
+        "confidence": 0.38666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 12,
+        "career": "Genetic Counselor",
+        "confidence": 0.24,
+        "matched": "Medical Doctor (MBBS)"
+      },
+      {
+        "testId": 13,
+        "career": "Radiologist",
+        "confidence": 0.24,
+        "matched": "Medical Doctor (MBBS)"
+      },
+      {
+        "testId": 14,
+        "career": "Bioinformatician",
+        "confidence": 0.24,
+        "matched": "Medical Doctor (MBBS)"
+      },
+      {
+        "testId": 17,
+        "career": "Neuroscience Researcher",
+        "confidence": 0.24,
+        "matched": "Medical Doctor (MBBS)"
+      },
+      {
+        "testId": 20,
+        "career": "Forensic Pathologist",
+        "confidence": 0.24,
+        "matched": "Medical Doctor (MBBS)"
+      },
+      {
+        "testId": 31,
+        "career": "Actuary",
+        "confidence": 0.38666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 38,
+        "career": "Derivatives Trader",
+        "confidence": 0.38666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 50,
+        "career": "Legislative Drafting Specialist",
+        "confidence": 0.38666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 53,
+        "career": "Intelligence Analyst (RAW track)",
+        "confidence": 0.26666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 61,
+        "career": "Computational Linguist",
+        "confidence": 0.26666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 62,
+        "career": "Science Journalist",
+        "confidence": 0.26666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 81,
+        "career": "Sommelier",
+        "confidence": 0.38666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 82,
+        "career": "Luthier (Instrument Maker)",
+        "confidence": 0.38666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 85,
+        "career": "Sign Language Interpreter",
+        "confidence": 0.38666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 87,
+        "career": "FMCG Supply Chain Specialist",
+        "confidence": 0.38666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 88,
+        "career": "Paleoclimatologist",
+        "confidence": 0.38666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 94,
+        "career": "Personal Genome Advisor",
+        "confidence": 0.38666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 97,
+        "career": "Carbon Credit Market Maker",
+        "confidence": 0.38666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 98,
+        "career": "Virtual Reality Therapist",
+        "confidence": 0.38666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 105,
+        "career": "Quantum Computing Researcher",
+        "confidence": 0.38666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      },
+      {
+        "testId": 107,
+        "career": "Forensic Pathologist",
+        "confidence": 0.26666666666666666,
+        "matched": "Tech Startup Founder / Entrepreneur"
+      }
+    ]
+  },
+  "stream_eligibility": {
+    "eligible": 45,
+    "ineligible": 8,
+    "agnostic": 57,
+    "ineligible_details": [
+      {
+        "testId": 32,
+        "career": "Quantitative Analyst (Quant)",
+        "persona": "C",
+        "stream": "Commerce",
+        "matched": "Data Scientist / ML Engineer"
+      },
+      {
+        "testId": 39,
+        "career": "ESG / Sustainability Analyst",
+        "persona": "C",
+        "stream": "Commerce",
+        "matched": "Data Scientist / ML Engineer"
+      },
+      {
+        "testId": 65,
+        "career": "Music Technology Engineer (Audio DSP)",
+        "persona": "D",
+        "stream": "Arts",
+        "matched": "Software Engineer"
+      },
+      {
+        "testId": 70,
+        "career": "Data Journalist",
+        "persona": "D",
+        "stream": "Arts",
+        "matched": "Data Scientist / ML Engineer"
+      },
+      {
+        "testId": 101,
+        "career": "Machine Learning Engineer",
+        "persona": "D",
+        "stream": "Arts",
+        "matched": "Data Scientist / ML Engineer"
+      },
+      {
+        "testId": 103,
+        "career": "Aerospace Engineer",
+        "persona": "C",
+        "stream": "Commerce",
+        "matched": "Software Engineer"
+      },
+      {
+        "testId": 104,
+        "career": "Cardiothoracic Surgeon",
+        "persona": "F",
+        "stream": "Arts",
+        "matched": "Medical Doctor (MBBS)"
+      },
+      {
+        "testId": 108,
+        "career": "AI Ethics Auditor",
+        "persona": "C",
+        "stream": "Commerce",
+        "matched": "Data Scientist / ML Engineer"
+      }
+    ]
+  },
+  "budget_violations": [
+    {
+      "testId": 11,
+      "career": "Cardiothoracic Surgeon",
+      "persona": "B",
+      "institution": "Kasturba Medical College",
+      "fee": 1800000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 12,
+      "career": "Genetic Counselor",
+      "persona": "B",
+      "institution": "Kasturba Medical College",
+      "fee": 1800000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 13,
+      "career": "Radiologist",
+      "persona": "B",
+      "institution": "Kasturba Medical College",
+      "fee": 1800000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 14,
+      "career": "Bioinformatician",
+      "persona": "B",
+      "institution": "Kasturba Medical College",
+      "fee": 1800000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 15,
+      "career": "Pharmacovigilance Specialist",
+      "persona": "B",
+      "institution": "University College London (Pharmacy)",
+      "fee": 3800000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 17,
+      "career": "Neuroscience Researcher",
+      "persona": "B",
+      "institution": "Kasturba Medical College",
+      "fee": 1800000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 18,
+      "career": "Prosthetist & Orthotist",
+      "persona": "B",
+      "institution": "Kasturba Medical College",
+      "fee": 1800000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 19,
+      "career": "Hospital Administrator",
+      "persona": "B",
+      "institution": "Kasturba Medical College",
+      "fee": 1800000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 20,
+      "career": "Forensic Pathologist",
+      "persona": "B",
+      "institution": "Kasturba Medical College",
+      "fee": 1800000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 41,
+      "career": "Constitutional Lawyer",
+      "persona": "E",
+      "institution": "University of Cape Town (UCT)",
+      "fee": 400000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 42,
+      "career": "Intellectual Property Attorney",
+      "persona": "E",
+      "institution": "University of Cape Town (UCT)",
+      "fee": 400000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 43,
+      "career": "International Arbitration Lawyer",
+      "persona": "E",
+      "institution": "University of Cape Town (UCT)",
+      "fee": 400000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 44,
+      "career": "Policy Analyst (Think Tank)",
+      "persona": "E",
+      "institution": "Fletcher School (Tufts)",
+      "fee": 5500000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 45,
+      "career": "Cyber Law Specialist",
+      "persona": "E",
+      "institution": "University of Cape Town (UCT)",
+      "fee": 400000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 46,
+      "career": "Environmental Lawyer",
+      "persona": "E",
+      "institution": "University of Cape Town (UCT)",
+      "fee": 400000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 47,
+      "career": "Legal Tech Entrepreneur",
+      "persona": "E",
+      "institution": "Stanford University (USA)",
+      "fee": 4500000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 48,
+      "career": "Human Rights Lawyer",
+      "persona": "E",
+      "institution": "University of Cape Town (UCT)",
+      "fee": 400000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 50,
+      "career": "Legislative Drafting Specialist",
+      "persona": "E",
+      "institution": "Stanford University (USA)",
+      "fee": 4500000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 53,
+      "career": "Intelligence Analyst (RAW track)",
+      "persona": "F",
+      "institution": "BITS Pilani (+ startup culture)",
+      "fee": 550000,
+      "budget": "<1L"
+    },
+    {
+      "testId": 102,
+      "career": "Investment Banker",
+      "persona": "B",
+      "institution": "Stanford University (USA)",
+      "fee": 4500000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 105,
+      "career": "Quantum Computing Researcher",
+      "persona": "E",
+      "institution": "Stanford University (USA)",
+      "fee": 4500000,
+      "budget": "1-3L"
+    },
+    {
+      "testId": 110,
+      "career": "Climate Tech Entrepreneur",
+      "persona": "F",
+      "institution": "BITS Pilani (+ startup culture)",
+      "fee": 550000,
+      "budget": "<1L"
+    }
+  ],
+  "cross_persona": [
+    {
+      "testId": 101,
+      "crossTest": "Arts student (no math) → ML Engineer",
+      "matchedCareer": "Data Scientist / ML Engineer",
+      "confidence": 1,
+      "streamStatus": "INELIGIBLE",
+      "streamReason": "Engineering via JEE requires PCM (Physics, Chemistry, Mathematics) at Class 12 level. This is a regulatory requirement by AICTE/UGC.",
+      "realityFlags": "[danger] STREAM MISMATCH; [success] FREE EDUCATION EXISTS",
+      "pathProbabilities": "safe:81%, balanced:93%, aggressive:66%",
+      "hasStreamMismatchFlag": true,
+      "hasBudgetGapFlag": false,
+      "hasTimelineFlag": false
+    },
+    {
+      "testId": 102,
+      "crossTest": "PCB student (NEET 420) → Investment Banker",
+      "matchedCareer": "Tech Startup Founder / Entrepreneur",
+      "confidence": 0.46666666666666656,
+      "streamStatus": "STREAM_AGNOSTIC",
+      "streamReason": "startup_founder accepts all academic streams.",
+      "realityFlags": "[danger] STREAM MISMATCH; [success] FREE EDUCATION EXISTS",
+      "pathProbabilities": "safe:72%, balanced:66%, aggressive:75%",
+      "hasStreamMismatchFlag": true,
+      "hasBudgetGapFlag": false,
+      "hasTimelineFlag": false
+    },
+    {
+      "testId": 103,
+      "crossTest": "Commerce student → Aerospace Engineer",
+      "matchedCareer": "Software Engineer",
+      "confidence": 0.92,
+      "streamStatus": "INELIGIBLE",
+      "streamReason": "Engineering via JEE requires PCM (Physics, Chemistry, Mathematics) at Class 12 level. This is a regulatory requirement by AICTE/UGC.",
+      "realityFlags": "[success] FREE EDUCATION EXISTS",
+      "pathProbabilities": "safe:94%, balanced:80%, aggressive:74%",
+      "hasStreamMismatchFlag": false,
+      "hasBudgetGapFlag": false,
+      "hasTimelineFlag": false
+    },
+    {
+      "testId": 104,
+      "crossTest": "UPSC aspirant (₹60K/yr) → Cardiothoracic Surgeon",
+      "matchedCareer": "Medical Doctor (MBBS)",
+      "confidence": 0.94,
+      "streamStatus": "INELIGIBLE",
+      "streamReason": "NMC regulations require PCB (Physics, Chemistry, Biology) at Class 12 for MBBS/BDS/BAMS/BHMS/BVSc admission via NEET.",
+      "realityFlags": "[warning] MARKS GAP; [danger] STREAM MISMATCH; [warning] TIMELINE MISMATCH",
+      "pathProbabilities": "safe:82%, balanced:71%, aggressive:53%",
+      "hasStreamMismatchFlag": true,
+      "hasBudgetGapFlag": false,
+      "hasTimelineFlag": true
+    },
+    {
+      "testId": 105,
+      "crossTest": "Law student → Quantum Computing Researcher",
+      "matchedCareer": "Tech Startup Founder / Entrepreneur",
+      "confidence": 0.38666666666666666,
+      "streamStatus": "STREAM_AGNOSTIC",
+      "streamReason": "startup_founder accepts all academic streams.",
+      "realityFlags": "[success] FREE EDUCATION EXISTS",
+      "pathProbabilities": "safe:94%, balanced:93%, aggressive:70%",
+      "hasStreamMismatchFlag": false,
+      "hasBudgetGapFlag": false,
+      "hasTimelineFlag": false
+    },
+    {
+      "testId": 106,
+      "crossTest": "PCM student (Bihar) → Constitutional Lawyer",
+      "matchedCareer": "Lawyer / Advocate",
+      "confidence": 1,
+      "streamStatus": "ELIGIBLE",
+      "streamReason": "Your PCM stream is compatible.",
+      "realityFlags": "[warning] TIMELINE MISMATCH; [success] FREE EDUCATION EXISTS",
+      "pathProbabilities": "safe:94%, balanced:85%, aggressive:64%",
+      "hasStreamMismatchFlag": false,
+      "hasBudgetGapFlag": false,
+      "hasTimelineFlag": true
+    },
+    {
+      "testId": 107,
+      "crossTest": "Arts student → Forensic Pathologist",
+      "matchedCareer": "Tech Startup Founder / Entrepreneur",
+      "confidence": 0.26666666666666666,
+      "streamStatus": "STREAM_AGNOSTIC",
+      "streamReason": "startup_founder accepts all academic streams.",
+      "realityFlags": "[info] LOW CONFIDENCE — CAREER NOT FULLY MAPPED; [success] FREE EDUCATION EXISTS",
+      "pathProbabilities": "safe:94%, balanced:93%, aggressive:72%",
+      "hasStreamMismatchFlag": false,
+      "hasBudgetGapFlag": false,
+      "hasTimelineFlag": false
+    },
+    {
+      "testId": 108,
+      "crossTest": "Commerce student → AI Ethics Auditor",
+      "matchedCareer": "Data Scientist / ML Engineer",
+      "confidence": 1,
+      "streamStatus": "INELIGIBLE",
+      "streamReason": "Engineering via JEE requires PCM (Physics, Chemistry, Mathematics) at Class 12 level. This is a regulatory requirement by AICTE/UGC.",
+      "realityFlags": "[success] FREE EDUCATION EXISTS",
+      "pathProbabilities": "safe:94%, balanced:94%, aggressive:66%",
+      "hasStreamMismatchFlag": false,
+      "hasBudgetGapFlag": false,
+      "hasTimelineFlag": false
+    },
+    {
+      "testId": 109,
+      "crossTest": "PCB student → Cryptographer",
+      "matchedCareer": "Blockchain Developer / Web3 Engineer",
+      "confidence": 0.7,
+      "streamStatus": "STREAM_AGNOSTIC",
+      "streamReason": "blockchain_developer accepts all academic streams.",
+      "realityFlags": "[danger] STREAM MISMATCH; [success] FREE EDUCATION EXISTS",
+      "pathProbabilities": "safe:72%, balanced:94%, aggressive:66%",
+      "hasStreamMismatchFlag": true,
+      "hasBudgetGapFlag": false,
+      "hasTimelineFlag": false
+    },
+    {
+      "testId": 110,
+      "crossTest": "UPSC aspirant → Climate Tech Entrepreneur",
+      "matchedCareer": "Tech Startup Founder / Entrepreneur",
+      "confidence": 1,
+      "streamStatus": "STREAM_AGNOSTIC",
+      "streamReason": "startup_founder accepts all academic streams.",
+      "realityFlags": "[warning] TIMELINE MISMATCH; [warning] LIMITING YOUR CEILING",
+      "pathProbabilities": "safe:78%, balanced:71%, aggressive:56%",
+      "hasStreamMismatchFlag": false,
+      "hasBudgetGapFlag": false,
+      "hasTimelineFlag": true
+    }
+  ],
+  "reality_flags": {
+    "flagTypes": {
+      "FREE EDUCATION EXISTS": 98,
+      "TIMELINE MISMATCH": 34,
+      "LOW CONFIDENCE — CAREER NOT FULLY MAPPED": 9,
+      "FUNDED PHD = FREE EDUCATION": 3,
+      "LIMITING YOUR CEILING": 7,
+      "MARKS GAP": 2,
+      "STREAM MISMATCH": 6,
+      "THE GLOBAL OPPORTUNITY": 1
+    },
+    "totalFlags": 160,
+    "testsWithNoFlags": 0,
+    "avgFlags": "1.45"
+  },
+  "probability_distribution": {
+    "safe": {
+      "min": 50,
+      "max": 94,
+      "avg": "91.8",
+      "count": 110
+    },
+    "balanced": {
+      "min": 53,
+      "max": 94,
+      "avg": "87.3",
+      "count": 110
+    },
+    "aggressive": {
+      "min": 49,
+      "max": 81,
+      "avg": "66.8",
+      "count": 110
+    }
+  },
+  "scholarships": {
+    "totalScholarships": 660,
+    "testsWithScholarships": 110,
+    "avgPerTest": "6.00",
+    "topScholarships": [
+      [
+        "CSC Scholarship (China)",
+        98
+      ],
+      [
+        "KGSP Scholarship (South Korea)",
+        98
+      ],
+      [
+        "PM Vidyalakshmi Scheme",
+        98
+      ],
+      [
+        "ICAI Merit Scholarship",
+        98
+      ],
+      [
+        "JN Tata Endowment",
+        98
+      ],
+      [
+        "Aga Khan Foundation Scholarship",
+        86
+      ],
+      [
+        "INSPIRE Scholarship",
+        12
+      ],
+      [
+        "Inlaks Shivdasani Scholarship",
+        12
+      ],
+      [
+        "Chevening Scholarship",
+        12
+      ],
+      [
+        "State Post-Matric Scholarship (SC/ST/OBC)",
+        12
+      ]
+    ]
+  },
+  "institutions": {
+    "unique": 205,
+    "total": 5571,
+    "avgPerTest": "50.6"
+  }
+}

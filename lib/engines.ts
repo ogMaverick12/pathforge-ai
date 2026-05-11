@@ -13,7 +13,7 @@ export function getInstitutions(careerId: string) {
   const base = [...career.topInstitutions];
   const globalInsts = ALL_GLOBAL_INSTITUTIONS.filter(i => i.careers.includes(careerId));
   for (const g of globalInsts) {
-    if (!base.find(b => b.name === g.name)) {
+    if (!base.find(b => b.name.toLowerCase() === g.name.toLowerCase())) {
       base.push({
         name: g.name,
         tier: g.tier,
@@ -33,15 +33,20 @@ import { retrieveRelevantCareers } from './rag-engine';
 
 // The old levenshtein and analyzeDream functions have been moved to rag-engine.ts
 
-// ─── PROBABILITY CALCULATOR ───────────────────────────────────────────────────
+// ─── PROBABILITY CALCULATOR (v2 — BUG-007/008 fix) ───────────────────────────
+// Stream mismatch is now MULTIPLICATIVE (hard cap) not additive.
+// Arts→ML Engineer: was 93%, now ~12%. Commerce→Aerospace: was 94%, now ~15%.
 export function calculateProbability(profile: ForgeProfile, careerId: string, mode: "safe" | "balanced" | "aggressive"): number {
   const career = CAREERS[careerId];
-  if (!career) return 30;
+  if (!career) return 15;
 
   const targetMarks = mode === "safe" ? career.minMarks : mode === "balanced" ? (career.minMarks + career.minMarksStretch) / 2 : career.minMarksStretch;
 
   const marksFit = Math.min(profile.marks / targetMarks, 1);
-  const streamFit = career.streams.includes(profile.stream) ? 1.0 : 0.35;
+
+  // Stream match: MULTIPLICATIVE cap — wrong stream hard-caps total probability
+  const streamMatch = career.streams.includes(profile.stream);
+  const streamMultiplier = streamMatch ? 1.0 : 0.20;
 
   const budgetMap: Record<string, number> = {
     "<1L": 50000, "1-3L": 200000, "3-6L": 450000, "6-12L": 900000,
@@ -53,12 +58,14 @@ export function calculateProbability(profile: ForgeProfile, careerId: string, mo
   const minInstitutionFee = sortedInstitutions[0]?.fees_per_year || 200000;
   const budgetFit = profile.budget === "full_scholarship" ? 0.7 : Math.min(budget / (minInstitutionFee * 4), 1);
 
-  const trendBonus = profile.trend === "improving" ? 0.08 : profile.trend === "declining" ? -0.12 : 0;
-  const abroadPenalty = career.globalScope && profile.abroad_open === "no" ? -0.1 : 0;
-  const modeMultiplier = mode === "safe" ? 1.1 : mode === "balanced" ? 1.0 : 0.75;
+  const trendBonus = profile.trend === "improving" ? 0.05 : profile.trend === "declining" ? -0.10 : 0;
+  const abroadPenalty = career.globalScope && profile.abroad_open === "no" ? -0.08 : 0;
+  const modeMultiplier = mode === "safe" ? 1.0 : mode === "balanced" ? 0.85 : 0.55;
 
-  const raw = ((marksFit * 0.40) + (streamFit * 0.30) + (budgetFit * 0.20) + 0.10 + trendBonus + abroadPenalty) * modeMultiplier;
-  return Math.min(Math.max(Math.round(raw * 100), 8), 94);
+  // Base probability from marks + budget + trend (stream is multiplicative, not additive)
+  const baseProbability = (marksFit * 0.50) + (budgetFit * 0.25) + 0.08 + trendBonus + abroadPenalty;
+  const raw = baseProbability * streamMultiplier * modeMultiplier;
+  return Math.min(Math.max(Math.round(raw * 100), 3), 94);
 }
 
 // ─── REALITY CHECK ENGINE ─────────────────────────────────────────────────────
@@ -307,7 +314,14 @@ function applyConstraintFilters(institutions: InstitutionData[], profile: ForgeP
     filtered = filtered.filter(i => i.fees_per_year <= maxBudget * tolerance);
   }
 
-  // Fallback: if all filtered out, return cheapest 3 from original list
+  // BUG-003 FIX: When ALL institutions exceed budget AND loan_open = "no",
+  // return EMPTY — do NOT fall back to cheapest 3 (that bypasses the hard filter).
+  // The generateResults() caller will detect empty and push a BUDGET_IMPOSSIBLE flag.
+  if (filtered.length === 0 && profile.loan_open === "no") {
+    return []; // Hard filter: no affordable options exist
+  }
+  
+  // For loan_open = "yes" or "maybe", fall back to cheapest 3
   return filtered.length > 0 ? filtered : [...institutions].sort((a, b) => a.fees_per_year - b.fees_per_year).slice(0, 3);
 }
 

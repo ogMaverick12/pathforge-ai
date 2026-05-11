@@ -121,6 +121,48 @@ const unknown = generateResults(makeProfile({ dream_job: 'Underwater Basket Weav
 assert('[unknown] has results', unknown.paths.length > 0, 'empty');
 assert('[unknown] low confidence', unknown.confidence < 0.5, `conf: ${unknown.confidence}`);
 
+// ─── GROUP 9: BUG-007/008 — PROBABILITY CAP ──────────────────
+console.log('\n═══ GROUP 9: PROBABILITY CAP (BUG-007/008) ═══');
+const artsMl = generateResults(makeProfile({ dream_job: 'ML Engineer', stream: 'Arts', marks: 76, budget: '1-3L' }));
+const safeProbArts = artsMl.paths[0]?.probability || 0;
+assert('[Arts→ML] safe prob < 25%', safeProbArts < 25, `got: ${safeProbArts}%`);
+
+const commAero = generateResults(makeProfile({ dream_job: 'Aerospace Engineer', stream: 'Commerce', marks: 80 }));
+const safeProbComm = commAero.paths[0]?.probability || 0;
+assert('[Commerce→Aerospace] safe < 25%', safeProbComm < 25, `got: ${safeProbComm}%`);
+
+const pcmSwe = generateResults(makeProfile({ dream_job: 'Software Engineer', stream: 'PCM', marks: 85 }));
+const safeProbPcm = pcmSwe.paths[0]?.probability || 0;
+assert('[PCM→SWE] safe prob >= 40%', safeProbPcm >= 40, `got: ${safeProbPcm}%`);
+
+// ─── GROUP 10: BUG-001/002 — NEW CAREER FALLBACK PREVENTION ──
+console.log('\n═══ GROUP 10: NEW CAREER MATCHING (BUG-001/002) ═══');
+const forensicP = makeProfile({ dream_job: 'forensic pathologist' });
+const forensic = retrieveRelevantCareersWithScores(forensicP);
+assert('[Forensic] ≠ startup_founder', forensic[0]?.career.id !== 'startup_founder', `got: ${forensic[0]?.career.id}`);
+
+const nuclearP = makeProfile({ dream_job: 'nuclear engineer barc' });
+const nuclear = retrieveRelevantCareersWithScores(nuclearP);
+assert('[Nuclear] ≠ software_engineer', nuclear[0]?.career.id !== 'software_engineer', `got: ${nuclear[0]?.career.id}`);
+
+const petrolP = makeProfile({ dream_job: 'petroleum engineer oil gas' });
+const petrol = retrieveRelevantCareersWithScores(petrolP);
+assert('[Petroleum] ≠ software_engineer', petrol[0]?.career.id !== 'software_engineer', `got: ${petrol[0]?.career.id}`);
+
+const ibP = makeProfile({ dream_job: 'investment banker wall street' });
+const ibResult = retrieveRelevantCareersWithScores(ibP);
+assert('[Investment Banker] ≠ startup_founder', ibResult[0]?.career.id !== 'startup_founder', `got: ${ibResult[0]?.career.id}`);
+
+const actuaryP = makeProfile({ dream_job: 'actuary insurance risk' });
+const actuaryResult = retrieveRelevantCareersWithScores(actuaryP);
+assert('[Actuary] ≠ startup_founder', actuaryResult[0]?.career.id !== 'startup_founder', `got: ${actuaryResult[0]?.career.id}`);
+
+// ─── GROUP 11: BUG-003 — BUDGET HARD FILTER ──────────────────
+console.log('\n═══ GROUP 11: BUDGET HARD FILTER (BUG-003) ═══');
+const budgetStrict = generateResults(makeProfile({ dream_job: 'Doctor', stream: 'PCB', marks: 90, budget: '<1L', loan_open: 'no' as const }));
+const overBudgetInsts = budgetStrict.paths.filter(p => p.institution && p.institution.fees_per_year > 100000);
+assert('[<1L, no loan] zero over-budget institutions', overBudgetInsts.length === 0, `found: ${overBudgetInsts.length} over ₹1L`);
+
 // ─── SUMMARY ──────────────────────────────────────────────────
 console.log('\n═══════════════════════════════════════════');
 console.log(`REGRESSION: ${passed} passed, ${failed} failed of ${passed + failed} tests`);

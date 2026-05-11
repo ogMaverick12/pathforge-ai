@@ -145,6 +145,14 @@ const CAREER_STREAM_MAP: Record<string, string> = {
   youtuber: "any_stream",
   teacher: "any_stream",
   yoga_wellness: "any_stream",
+  // Stress test expansion careers
+  forensic_scientist: "science_research",
+  nuclear_engineer: "engineering_jee",
+  supply_chain_manager: "any_stream",
+  biomedical_engineer: "engineering_jee",
+  petroleum_engineer: "engineering_jee",
+  statistician: "science_research",
+  environmental_engineer: "science_research",
 };
 
 // ── PUBLIC API ────────────────────────────────────────────────
