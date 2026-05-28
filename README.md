@@ -115,22 +115,33 @@ npx tsx lib/regression-tests.ts
 ## Core Engines
 
 ### 1. RAG Career Matcher
-Four-layer matching pipeline:
+Five-layer matching pipeline:
 - **Exact match** — career name/alias lookup
 - **Semantic keywords** — 280+ keyword → career mappings
+- **Synonym-based Query Expansion** — matches alternate terms like *physician* → *doctor*, *coder* → *software engineer* client-side to improve search accuracy
 - **TF-IDF similarity** — cosine similarity against career corpus
 - **Intent classification** — maps dreams to action intents (build, heal, create, etc.)
 
-### 2. Multi-Factor Probability Calculator
+### 2. Local-First Resiliency
+The application is built to run local-first. If the `NVIDIA_API_KEY` or Clerk publishable keys are missing, the backend and UI automatically fall back to local deterministic generation. Dynamic paths generate in ~150ms with zero API key dependencies.
+
+### 3. Interactive Roadmap & Mock Tracker
+* **Interactive Milestones**: Milestone items on each path feature checkbox controls. Completing milestones dynamically increases matching probability.
+* **Mock Score Tracker**: For exam-bound routes (UPSC, JEE, NEET, etc.), entering mock test percentiles dynamically updates exam clearing probabilities.
+
+### 4. Education Loan & EMI Calculator
+Integrated directly into the results dashboard, this calculator reads the yearly fees and timelines of matched target institutions and computes monthly EMIs, total interest, and total repayment under customizable interest rates and tenures (3–15 years).
+
+### 5. Multi-Factor Probability Calculator
 Weighted scoring: marks fit (40%) + stream fit (30%) + budget fit (20%) + base (10%) + trend bonus ± exam difficulty modifier ± low-marks penalty.
 
-### 3. Scholarship Intelligence
+### 6. Scholarship Intelligence
 74 scholarships with eligibility matching, region filtering (hard filter for `abroad=no`), and budget-aware ranking.
 
-### 4. Anti-Hallucination Guard
+### 7. Anti-Hallucination Guard
 Negative keyword system prevents cross-domain confusion (e.g., "underwriter" ≠ "writer", "marine engineer" ≠ "marine biologist"). 10 dedicated adversarial tests verify collision prevention.
 
-### 5. Reality Check Engine
+### 8. Reality Check Engine
 Generates specific flags for:
 - Marks gaps (low marks for competitive exams)
 - Stream mismatches (Arts → MBBS)
