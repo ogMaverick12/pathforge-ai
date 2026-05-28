@@ -1,9 +1,9 @@
 // ============================================================
-// PATHFORGE AI — CORE INTELLIGENCE ENGINES (v3)
+// PATHFORGE AI — CORE INTELLIGENCE ENGINES (v4)
 // ============================================================
 
 import { CAREERS, type CareerProfile, type InstitutionData } from './career-database';
-import { SCHOLARSHIPS, type Scholarship } from './scholarship-database';
+import { ALL_SCHOLARSHIPS as SCHOLARSHIPS, type Scholarship } from './scholarship-database';
 import { ALL_GLOBAL_INSTITUTIONS } from './institution-database';
 import type { ForgeProfile, GeneratedResults, CareerPath, RealityFlag, ScholarshipMatch } from './types';
 
@@ -62,10 +62,18 @@ export function calculateProbability(profile: ForgeProfile, careerId: string, mo
   const abroadPenalty = career.globalScope && profile.abroad_open === "no" ? -0.08 : 0;
   const modeMultiplier = mode === "safe" ? 1.0 : mode === "balanced" ? 0.85 : 0.55;
 
+  // Extra penalty for extremely low marks — marks=0 should give near-floor probability
+  const lowMarksPenalty = profile.marks < 30 ? (0.3 + (profile.marks / 30) * 0.7) : 1.0;
+
   // Base probability from marks + budget + trend (stream is multiplicative, not additive)
   const baseProbability = (marksFit * 0.50) + (budgetFit * 0.25) + 0.08 + trendBonus + abroadPenalty;
-  const raw = baseProbability * streamMultiplier * modeMultiplier;
-  return Math.min(Math.max(Math.round(raw * 100), 3), 94);
+  const raw = baseProbability * streamMultiplier * modeMultiplier * lowMarksPenalty;
+  const unclamped = Math.min(Math.max(Math.round(raw * 100), 3), 94);
+
+  // Mode-specific clamping: safe=higher range, aggressive=lower range
+  if (mode === "safe") return Math.min(Math.max(unclamped, 8), 94);
+  if (mode === "balanced") return Math.min(Math.max(unclamped, 5), 78);
+  return Math.min(Math.max(unclamped, 3), 48); // aggressive
 }
 
 // ─── REALITY CHECK ENGINE ─────────────────────────────────────────────────────
@@ -195,6 +203,9 @@ export function matchScholarships(profile: ForgeProfile): ScholarshipMatch[] {
   let eligibleScholarships = SCHOLARSHIPS;
   if (profile.abroad_open === "only_abroad") {
     eligibleScholarships = eligibleScholarships.filter(s => s.region !== "india");
+  } else if (profile.abroad_open === "no") {
+    // Hard filter: abroad=no means ONLY India scholarships, zero leakage
+    eligibleScholarships = eligibleScholarships.filter(s => s.region === "india");
   }
 
   const matches: ScholarshipMatch[] = [];
@@ -303,6 +314,16 @@ function applyConstraintFilters(institutions: InstitutionData[], profile: ForgeP
     filtered = filtered.filter(i => i.type !== "global");
   }
 
+  // abroad_open: "if_funded" → only show global institutions with verified scholarships
+  if (profile.abroad_open === "if_funded") {
+    filtered = filtered.filter(i => {
+      if (i.type !== "global") return true; // domestic always OK
+      // Check if this global institution has scholarship_available flag
+      const globalInst = ALL_GLOBAL_INSTITUTIONS.find(g => g.name.toLowerCase() === i.name.toLowerCase());
+      return globalInst?.scholarship_available === true;
+    });
+  }
+
   // loan_open: "no" → remove institutions exceeding budget
   if (profile.loan_open === "no") {
     const budgetMap: Record<string, number> = {
@@ -316,13 +337,61 @@ function applyConstraintFilters(institutions: InstitutionData[], profile: ForgeP
 
   // BUG-003 FIX: When ALL institutions exceed budget AND loan_open = "no",
   // return EMPTY — do NOT fall back to cheapest 3 (that bypasses the hard filter).
-  // The generateResults() caller will detect empty and push a BUDGET_IMPOSSIBLE flag.
   if (filtered.length === 0 && profile.loan_open === "no") {
     return []; // Hard filter: no affordable options exist
   }
   
   // For loan_open = "yes" or "maybe", fall back to cheapest 3
   return filtered.length > 0 ? filtered : [...institutions].sort((a, b) => a.fees_per_year - b.fees_per_year).slice(0, 3);
+}
+
+// ─── BRIDGE PATHWAY GENERATOR ─────────────────────────────────────────────────
+// When stream mismatch is detected, generate a concrete re-routing plan
+const BRIDGE_PATHS: Record<string, Record<string, string>> = {
+  // Arts stream → STEM/Commerce careers
+  "Arts": {
+    "software_engineer": "Arts → BCA (3yr) → MCA (2yr) → Software Development",
+    "data_scientist": "Arts → B.Sc Statistics/Math (3yr) → M.Sc Data Science (2yr) → Industry",
+    "ai_ml_researcher": "Arts → BCA (3yr) → M.Tech AI (2yr) → Research",
+    "doctor_mbbs": "Arts → NIOS PCB recertification (1yr) → NEET → MBBS (5.5yr)",
+    "aerospace_engineer": "Arts → Diploma in Engineering (3yr) → B.Tech Lateral Entry (3yr)",
+    "mechanical_engineer": "Arts → Polytechnic Diploma (3yr) → B.Tech Lateral (3yr)",
+    "civil_engineer": "Arts → Polytechnic Diploma (3yr) → B.Tech Lateral (3yr)",
+    "chartered_accountant": "Arts → CA Foundation (direct entry) → Articleship → CA Final",
+    "nuclear_engineer": "Arts → B.Sc Physics (3yr) → GATE → M.Tech Nuclear (2yr)",
+  },
+  // Commerce stream → STEM careers
+  "Commerce": {
+    "software_engineer": "Commerce → BCA/B.Sc CS (3yr) → MCA/M.Sc CS (2yr) → Industry",
+    "data_scientist": "Commerce → B.Sc Statistics (3yr) → M.Sc Data Science (2yr)",
+    "doctor_mbbs": "Commerce → NIOS PCB (1yr) → NEET → MBBS (5.5yr)",
+    "aerospace_engineer": "Commerce → Polytechnic (3yr) → B.Tech Lateral Entry (3yr)",
+    "mechanical_engineer": "Commerce → Polytechnic (3yr) → B.Tech Lateral Entry (3yr)",
+    "ai_ml_researcher": "Commerce → BCA (3yr) → M.Tech AI/ML (2yr) → Research",
+  },
+  // PCB stream → non-medical careers
+  "PCB": {
+    "software_engineer": "PCB → B.Sc (3yr) → MCA (2yr) OR self-taught dev route",
+    "chartered_accountant": "PCB → CA Foundation (direct) → Articleship → CA Final",
+    "lawyer": "PCB → CLAT/LSAT → 5yr Integrated LLB",
+    "data_scientist": "PCB → B.Sc Biostatistics (3yr) → M.Sc Data Science (2yr)",
+    "aerospace_engineer": "PCB → B.Sc Physics (3yr) → GATE → M.Tech (2yr)",
+  },
+  // PCM stream → medical/arts careers
+  "PCM": {
+    "doctor_mbbs": "PCM → NEET (Biology self-study) — some PCM students clear NEET",
+    "lawyer": "PCM → CLAT/LSAT → 5yr Integrated LLB (stream-agnostic)",
+    "journalist": "PCM → BA Journalism (3yr) or direct PG Diploma in Journalism",
+    "psychologist": "PCM → BA Psychology (3yr) → MA → Clinical training",
+  },
+};
+
+function generateBridgePath(profile: ForgeProfile, careerId: string): string | undefined {
+  const career = CAREERS[careerId];
+  if (!career) return undefined;
+  if (career.streams.includes(profile.stream)) return undefined; // No bridge needed
+  return BRIDGE_PATHS[profile.stream]?.[careerId] ||
+    `${profile.stream} → Foundation degree in ${career.streams[0]} domain (3yr) → Specialization in ${career.name} (2yr)`;
 }
 
 // ─── EXAM BASE RATES (GAP-2) ─────────────────────────────────────────────────
@@ -342,6 +411,150 @@ const EXAM_BASE_RATES: Record<string, string> = {
   "NIFT Entrance": "~5% selection rate",
   "NID DAT": "~3% selection rate",
 };
+
+// ─── PHASE 2: ROI CALCULATOR ──────────────────────────────────────────────────
+// Returns 5-year, 10-year, 20-year ROI based on career salary data vs total investment
+export function calculateROI(profile: ForgeProfile, careerId: string): { investmentTotal: string; roi5yr: string; roi10yr: string; roi20yr: string; breakEvenYears: number; verdict: string } {
+  const career = CAREERS[careerId];
+  if (!career) return { investmentTotal: 'N/A', roi5yr: 'N/A', roi10yr: 'N/A', roi20yr: 'N/A', breakEvenYears: 0, verdict: 'Unknown' };
+
+  const budgetMap: Record<string, number> = { '<1L': 50000, '1-3L': 200000, '3-6L': 450000, '6-12L': 900000, '12-25L': 1850000, '25L+': 4000000, 'full_scholarship': 0 };
+  const yearlyBudget = budgetMap[profile.budget] || 200000;
+  const totalInvestment = yearlyBudget * career.timeline;
+
+  // Parse salary ranges (extract numeric LPA values)
+  const parseSalary = (s: string): number => {
+    const match = s.match(/(\d+(?:\.\d+)?)/g);
+    if (!match) return 300000;
+    const vals = match.map(Number);
+    return (vals.reduce((a, b) => a + b, 0) / vals.length) * 100000; // avg LPA → annual
+  };
+
+  const entryPay = parseSalary(career.salaryRange.entry);
+  const midPay = parseSalary(career.salaryRange.mid);
+  const seniorPay = parseSalary(career.salaryRange.senior);
+
+  // 5yr: entry pay * 3 working years (after timeline)
+  const workingYrs5 = Math.max(5 - career.timeline, 1);
+  const earnings5yr = entryPay * workingYrs5;
+  const roi5yr = totalInvestment > 0 ? ((earnings5yr - totalInvestment) / totalInvestment * 100) : 0;
+
+  // 10yr: entry (2yr) + mid (remaining)
+  const workingYrs10 = Math.max(10 - career.timeline, 1);
+  const earnings10yr = entryPay * Math.min(workingYrs10, 2) + midPay * Math.max(workingYrs10 - 2, 0);
+  const roi10yr = totalInvestment > 0 ? ((earnings10yr - totalInvestment) / totalInvestment * 100) : 0;
+
+  // 20yr: entry (2yr) + mid (8yr) + senior (remaining)
+  const workingYrs20 = Math.max(20 - career.timeline, 1);
+  const earnings20yr = entryPay * Math.min(workingYrs20, 2) + midPay * Math.min(Math.max(workingYrs20 - 2, 0), 8) + seniorPay * Math.max(workingYrs20 - 10, 0);
+  const roi20yr = totalInvestment > 0 ? ((earnings20yr - totalInvestment) / totalInvestment * 100) : 0;
+
+  // Break-even: years until cumulative earnings exceed investment
+  let cumulative = 0;
+  let breakEven = career.timeline;
+  for (let y = 1; y <= 20; y++) {
+    cumulative += y <= 2 ? entryPay : y <= 10 ? midPay : seniorPay;
+    if (cumulative >= totalInvestment && breakEven === career.timeline) {
+      breakEven = career.timeline + y;
+      break;
+    }
+  }
+
+  const fmt = (n: number) => n >= 10000000 ? `₹${(n / 10000000).toFixed(1)}Cr` : `₹${(n / 100000).toFixed(1)}L`;
+  const verdict = roi10yr > 500 ? 'Excellent' : roi10yr > 200 ? 'Good' : roi10yr > 50 ? 'Moderate' : 'Low';
+
+  return {
+    investmentTotal: fmt(totalInvestment),
+    roi5yr: `${Math.round(roi5yr)}%`,
+    roi10yr: `${Math.round(roi10yr)}%`,
+    roi20yr: `${Math.round(roi20yr)}%`,
+    breakEvenYears: breakEven,
+    verdict
+  };
+}
+
+// ─── PHASE 2: EXAM DIFFICULTY MODIFIER ────────────────────────────────────────
+// Adjusts probability based on specific exam difficulty tiers
+// Source: NTA, UPSC, ICAI, NID, NIFT annual reports (2023-2025 averages)
+const EXAM_DIFFICULTY: Record<string, number> = {
+  // Ultra-competitive (pass rate <3%)
+  'UPSC Civil Services Examination': 0.30, // ~0.1% selection rate (2024: 1M applicants, 1000 selected)
+  'IAS': 0.30,
+  // Very hard (pass rate 3-15%)
+  'JEE Advanced': 0.40,       // ~2.5% selection from JEE Mains qualifiers
+  'NID DAT': 0.40,            // ~3% acceptance rate
+  'CAT': 0.42,                // ~5% score 99+ percentile
+  'CA Final': 0.45,           // ~10-15% pass rate per attempt (ICAI 2024)
+  'ICRB Exam / GATE': 0.38,  // ISRO recruitment: <2% selection
+  // Hard (pass rate 15-35%)
+  'NIFT Entrance': 0.48,     // ~8% acceptance
+  'CLAT': 0.55,              // ~15% qualify for top 5 NLUs
+  'NDA': 0.50,               // ~3% final selection from 5L+ applicants
+  'NDA / CDS / AFCAT': 0.50,
+  'GATE': 0.55,              // ~17% qualify
+  'UGC NET': 0.50,           // ~6-8% qualify
+  'CA Foundation': 0.65,     // ~30-40% pass rate (ICAI)
+  // Moderate (pass rate 35-60%)
+  'NEET-UG': 0.60,           // ~50% qualify, but top college cutoffs much harder
+  'NEET-PG': 0.60,           // ~50% qualify
+  'JEE Mains': 0.70,         // ~25% qualify for counselling
+  'IMU-CET': 0.65,           // ~40% qualify
+  // Expansion career exams
+  'IAI Actuarial Exams': 0.40, // ~10% per paper
+  'CTET / State TET': 0.65,   // ~30% qualify
+  'RBI Grade B': 0.35,        // ~1% selection rate
+  'SSC CGL': 0.45,            // ~2% final selection
+  'Indian Forest Service': 0.32, // ~0.5% selection
+  'JEST / TIFR': 0.45,        // ~5% selection for research
+  'CUCET': 0.70,              // ~40% qualify
+  'Defence (CDS)': 0.48,      // ~3% final selection including SSB
+};
+
+function applyExamDifficulty(baseProbability: number, examRequired: string | null): number {
+  if (!examRequired) return baseProbability;
+  const modifier = EXAM_DIFFICULTY[examRequired];
+  if (!modifier) return baseProbability;
+  // Blend: 60% base probability + 40% exam difficulty factor
+  return Math.round(baseProbability * 0.6 + baseProbability * modifier * 0.4);
+}
+
+// ─── PHASE 3: GEOGRAPHIC CONSTRAINT PROPAGATION ───────────────────────────────
+// Matches state-level scholarships to user's location
+export function matchStateScholarships(profile: ForgeProfile): ScholarshipMatch[] {
+  const userState = ((profile as any).state || '').toLowerCase().trim();
+  if (!userState) return [];
+
+  // State name → scholarship ID prefix mapping
+  const stateKeys: Record<string, string[]> = {
+    'andhra pradesh': ['ap_'], 'arunachal pradesh': ['arunachal_'], 'assam': ['assam_'],
+    'bihar': ['bihar_'], 'chhattisgarh': ['cg_'], 'goa': ['goa_'],
+    'gujarat': ['gujarat_'], 'haryana': ['haryana_'], 'himachal pradesh': ['hp_'],
+    'jharkhand': ['jharkhand_'], 'karnataka': ['karnataka_'], 'kerala': ['kerala_'],
+    'madhya pradesh': ['mp_'], 'maharashtra': ['mh_'], 'manipur': ['manipur_'],
+    'meghalaya': ['meghalaya_'], 'mizoram': ['mizoram_'], 'nagaland': ['nagaland_'],
+    'odisha': ['odisha_'], 'punjab': ['punjab_'], 'rajasthan': ['rajasthan_'],
+    'sikkim': ['sikkim_'], 'tamil nadu': ['tn_'], 'telangana': ['telangana_'],
+    'tripura': ['tripura_'], 'uttar pradesh': ['up_'], 'uttarakhand': ['uttarakhand_'],
+    'west bengal': ['wb_'], 'jammu and kashmir': ['jk_'], 'jammu & kashmir': ['jk_'],
+  };
+
+  const prefixes = stateKeys[userState] || [];
+  if (prefixes.length === 0) return [];
+
+  return SCHOLARSHIPS
+    .filter(s => prefixes.some(p => s.id.startsWith(p)))
+    .filter(s => {
+      if (s.criteria.minMarks && profile.marks < s.criteria.minMarks - 10) return false;
+      if (s.criteria.gender && (profile as any).gender && s.criteria.gender !== (profile as any).gender) return false;
+      return true;
+    })
+    .map(s => ({
+      scholarship: s,
+      score: 80, // State scholarships get high relevance by default
+      tier: 'high' as const,
+      matchReason: `You're from ${userState} — this is your state's dedicated scholarship`
+    }));
+}
 
 // ─── FRAMEWORK B: EXAM ROADMAP BUILDER ────────────────────────────────────────
 import type { ExamRoadmap, ExamPhase, PortfolioRoadmap } from './types';
@@ -474,17 +687,29 @@ export function generateResults(profile: ForgeProfile): GeneratedResults {
       targetInst = availableInstitutions[0];
     }
 
+    // Guard: if ALL institutions were filtered out, use a placeholder
+    if (!targetInst) {
+      const allRaw = getInstitutions(cId);
+      targetInst = allRaw[0] || { name: 'Self-Study / Online Route', tier: 1, city: 'Online', state: 'India', fees_per_year: 0, cutoff_description: 'Open', placement_median: 'Varies', type: 'domestic' as const };
+    }
+
     allInstitutions = [...allInstitutions, ...availableInstitutions];
 
-    const prob = calculateProbability(profile, cId, modes[index]);
+    const prob = applyExamDifficulty(
+      calculateProbability(profile, cId, modes[index]),
+      CAREERS[cId]?.examRequired || null
+    );
+
+    // Calculate ROI for this path
+    const roi = calculateROI(profile, cId);
 
     let rationale = "";
     if (index === 0) {
-       rationale = `Given your ${profile.marks}% in ${profile.stream}, ${c.name} is the most mathematically secure path within your interest area.`;
+       rationale = `Given your ${profile.marks}% in ${profile.stream}, ${c.name} is the most mathematically secure path within your interest area. ROI: ${roi.roi10yr} over 10 years.`;
     } else if (index === 1) {
-       rationale = `A pivot to ${c.name} offers higher leverage. It uses similar foundational skills but offers a different trajectory.`;
+       rationale = `A pivot to ${c.name} offers higher leverage. ROI: ${roi.roi10yr} over 10 years. Break-even in ~${roi.breakEvenYears} years.`;
     } else {
-       rationale = `Based on your deep aspirations, ${c.name} represents the maximum realization of that dream.`;
+       rationale = `Based on your deep aspirations, ${c.name} represents the maximum realization of that dream. Investment: ${roi.investmentTotal}, ROI verdict: ${roi.verdict}.`;
     }
 
     paths.push({
@@ -524,6 +749,20 @@ export function generateResults(profile: ForgeProfile): GeneratedResults {
   // ── Step 7: Match scholarships with domain gating ──
   const scholarships = matchScholarships(profile);
 
+  // ── Step 7b: Merge state-level scholarships (Phase 3) ──
+  const stateScholarships = matchStateScholarships(profile);
+  const mergedScholarships = [...scholarships];
+  for (const ss of stateScholarships) {
+    if (!mergedScholarships.find(m => m.scholarship.id === ss.scholarship.id)) {
+      mergedScholarships.push(ss);
+    }
+  }
+  // Re-sort and cap at 8 (expanded from 6 to accommodate state matches)
+  mergedScholarships.sort((a, b) => b.score - a.score);
+
+  // ── Step 8: Generate bridge pathway if stream mismatch ──
+  const bridgePath = generateBridgePath(profile, mainCareerId);
+
   return {
     careerId: mainCareerId,
     careerName: career.name,
@@ -536,11 +775,12 @@ export function generateResults(profile: ForgeProfile): GeneratedResults {
       status: streamResult.status as "ELIGIBLE" | "INELIGIBLE" | "STREAM_AGNOSTIC", 
       reason: streamResult.reason 
     },
+    bridgePath,
     paths,
     examRoadmap,
     portfolioRoadmap,
     realityFlags,
-    scholarships,
+    scholarships: mergedScholarships.slice(0, 8),
     skillDomains: career.domains,
     institutions: allInstitutions
   };

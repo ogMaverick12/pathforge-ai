@@ -122,6 +122,9 @@ export interface GeneratedResults {
   // Stream eligibility
   streamEligibility: StreamEligibilityResult;
 
+  // Bridge pathway (when stream mismatch detected)
+  bridgePath?: string;
+
   // Framework A output
   paths: CareerPath[];
 

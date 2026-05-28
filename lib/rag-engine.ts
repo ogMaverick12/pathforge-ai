@@ -1,5 +1,6 @@
 import { CAREERS, type CareerProfile } from './career-database';
-import { SCHOLARSHIPS, type Scholarship } from './scholarship-database';
+import { ALL_SCHOLARSHIPS as SCHOLARSHIPS, type Scholarship } from './scholarship-database';
+import { tfidfSimilarity } from './tfidf-engine';
 import type { ForgeProfile } from './types';
 
 // ═══════════════════════════════════════════════════════════════
@@ -115,9 +116,9 @@ const SEMANTIC_KEYWORDS: Record<string, string[]> = {
   'scientist': ['research_scientist', 'ai_researcher', 'space_scientist', 'environmental_scientist'],
   'space': ['space_scientist'],
   'rocket': ['space_scientist'],
-  'isro': ['space_scientist'],
+  'isro': ['space_scientist', 'isro_scientist'],
   'nasa': ['space_scientist'],
-  'ocean': ['marine_biologist'],
+  'ocean': ['marine_biologist', 'oceanographer'],
   'marine': ['marine_biologist'],
   'environment': ['environmental_scientist'],
   'climate': ['environmental_scientist', 'marine_biologist'],
@@ -161,6 +162,122 @@ const SEMANTIC_KEYWORDS: Record<string, string[]> = {
   'renewable': ['electrician_electrical_engineer', 'environmental_scientist'],
   'solar': ['electrician_electrical_engineer', 'environmental_scientist'],
   'ev': ['electrician_electrical_engineer'],
+
+  // Defence & Government (expansion)
+  'army': ['defence_officer'],
+  'navy': ['merchant_navy', 'defence_officer'],
+  'military': ['defence_officer'],
+  'nda': ['defence_officer'],
+  'defence': ['defence_officer'],
+  'defense': ['defence_officer'],
+  'merchant navy': ['merchant_navy'],
+  'sailor': ['merchant_navy'],
+  'shipping': ['merchant_navy'],
+  'drdo': ['defence_officer', 'mechanical_engineer'],
+  'barc': ['nuclear_engineer'],
+  'nuclear': ['nuclear_engineer'],
+  'ips officer': ['ips_officer'],
+  'ifs officer': ['ifs_officer'],
+  'rbi': ['rbi_grade_b'],
+  'reserve bank': ['rbi_grade_b'],
+
+  // Trades & Niche (expansion)
+  'chef': ['chef'],
+  'cooking': ['chef'],
+  'culinary': ['chef'],
+  'tattoo': ['tattoo_artist'],
+  'plumber': ['plumber'],
+  'plumbing': ['plumber'],
+  'welding': ['welder'],
+  'welder': ['welder'],
+  'electrician': ['electrician'],
+  'wiring': ['electrician'],
+  'event': ['event_manager'],
+  'wedding planner': ['event_manager'],
+  'concert': ['event_manager', 'music_producer'],
+  'music production': ['music_producer'],
+  'producer': ['music_producer'],
+
+  // Engineering expansion
+  'biomedical': ['biomedical_engineer'],
+  'petroleum': ['petroleum_engineer'],
+  'oil gas': ['petroleum_engineer'],
+  'mining': ['mining_engineer'],
+  'food technology': ['food_technologist'],
+  'food science': ['food_technologist'],
+  'robotics': ['robotics_engineer'],
+  'iot': ['iot_engineer'],
+  'internet of things': ['iot_engineer'],
+  'xr': ['xr_designer'],
+  'virtual reality': ['xr_designer'],
+  'augmented reality': ['xr_designer'],
+  'prompt engineer': ['prompt_engineer'],
+
+  // Media & Professional (expansion)
+  'forensic accounting': ['forensic_accountant'],
+  'fraud': ['forensic_accountant'],
+  'meteorology': ['meteorologist'],
+  'weather': ['meteorologist'],
+  'archaeology': ['archaeologist'],
+  'museum': ['museum_curator'],
+  'curator': ['museum_curator'],
+  'news': ['news_anchor', 'sports_journalist'],
+  'anchor': ['news_anchor'],
+  'advertising': ['advertising_professional'],
+  'public relations': ['pr_specialist'],
+  'pr': ['pr_specialist'],
+  'professor': ['professor'],
+  'academia': ['professor'],
+  'edtech': ['edtech_professional'],
+
+  // Sports expansion
+  'sports medicine': ['sports_physiologist'],
+  'sports science': ['sports_physiologist'],
+  'sports journalism': ['sports_journalist'],
+  'sports writer': ['sports_journalist'],
+
+  // New niche careers
+  'semiconductor': ['semiconductor_engineer'],
+  'vlsi': ['semiconductor_engineer'],
+  'chip design': ['semiconductor_engineer'],
+  'asic': ['semiconductor_engineer'],
+  'fpga': ['semiconductor_engineer'],
+  'psychologist': ['clinical_psychologist'],
+  'therapist': ['clinical_psychologist'],
+  'mental health': ['clinical_psychologist'],
+  'counseling': ['clinical_psychologist'],
+  'cbt': ['clinical_psychologist'],
+  'agritech': ['agricultural_engineer'],
+  'agriculture': ['agricultural_engineer'],
+  'smart farming': ['agricultural_engineer'],
+  'precision agriculture': ['agricultural_engineer'],
+  'data pipeline': ['data_engineer'],
+  'etl': ['data_engineer'],
+  'big data': ['data_engineer', 'data_scientist'],
+  'spark': ['data_engineer'],
+  'data warehouse': ['data_engineer'],
+  'ethical hacker': ['ethical_hacker'],
+  'pentester': ['ethical_hacker'],
+  'bug bounty': ['ethical_hacker'],
+  'red team': ['ethical_hacker'],
+  'speech therapy': ['speech_therapist'],
+  'speech pathologist': ['speech_therapist'],
+  'slp': ['speech_therapist'],
+  'stuttering': ['speech_therapist'],
+  'genetic counselor': ['genetic_counselor'],
+  'genomics': ['genetic_counselor'],
+  'dna testing': ['genetic_counselor'],
+  'urban planner': ['urban_planner'],
+  'city planner': ['urban_planner'],
+  'smart city': ['urban_planner'],
+  'town planning': ['urban_planner'],
+  'film editor': ['film_editor'],
+  'video editor': ['film_editor'],
+  'post production': ['film_editor'],
+  'color grading': ['film_editor'],
+  'drone pilot': ['drone_pilot'],
+  'uav': ['drone_pilot'],
+  'drone operator': ['drone_pilot'],
 };
 
 // ── INTENT CLASSIFIER ─────────────────────────────────────────
@@ -253,6 +370,10 @@ export function retrieveRelevantCareers(profile: ForgeProfile, topK = 8): Career
   const deepDreamNorm = (profile.deep_dream || '').toLowerCase().trim();
   const combinedInput = `${dreamJobNorm} ${deepDreamNorm}`;
   const inputTokens = combinedInput.split(/[^a-z0-9]+/).filter(w => w.length > 1);
+
+  // Pre-compute TF-IDF similarities for this query
+  const tfidfResults = tfidfSimilarity(combinedInput);
+  const tfidfScores = new Map(tfidfResults.map(r => [r.id, r.similarity]));
 
   // Classify user intent
   const detectedIntents: Intent[] = [];
@@ -373,6 +494,15 @@ export function retrieveRelevantCareers(profile: ForgeProfile, topK = 8): Career
       score -= 20;
     }
 
+    // ── Signal 9: TF-IDF corpus similarity ──────────────────
+    // Provides matching signal for careers without manual keyword maps
+    const tfidfMatch = tfidfScores.get(id);
+    if (tfidfMatch && tfidfMatch > 0.05) {
+      const tfidfBoost = Math.round(tfidfMatch * 60); // Scale 0-60
+      score += tfidfBoost;
+      if (tfidfBoost >= 20) matchSignals.push(`TFIDF:${tfidfBoost}`);
+    }
+
     scores.push({ career, score, matchSignals });
   }
 
@@ -391,6 +521,10 @@ export function retrieveRelevantCareersWithScores(profile: ForgeProfile, topK = 
   const deepDreamNorm = (profile.deep_dream || '').toLowerCase().trim();
   const combinedInput = `${dreamJobNorm} ${deepDreamNorm}`;
   const allTokens = combinedInput.split(/[^a-z0-9]+/).filter(w => w.length > 1);
+
+  // Pre-compute TF-IDF similarities
+  const tfidfResults = tfidfSimilarity(combinedInput);
+  const tfidfScores = new Map(tfidfResults.map(r => [r.id, r.similarity]));
 
   const detectedIntents: Intent[] = [];
   for (const [intent, pattern] of Object.entries(INTENT_PATTERNS)) {
@@ -476,6 +610,14 @@ export function retrieveRelevantCareersWithScores(profile: ForgeProfile, topK = 
     // Signal 8: Fit penalties
     if (!career.streams.includes(profile.stream)) score -= 30;
     if (profile.marks < career.minMarksStretch - 15) score -= 20;
+
+    // Signal 9: TF-IDF corpus similarity
+    const tfidfMatch = tfidfScores.get(id);
+    if (tfidfMatch && tfidfMatch > 0.05) {
+      const tfidfBoost = Math.round(tfidfMatch * 60);
+      score += tfidfBoost;
+      if (tfidfBoost >= 20) matchSignals.push(`TFIDF:${tfidfBoost}`);
+    }
 
     scores.push({ career, score, matchSignals });
   }

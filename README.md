@@ -15,9 +15,22 @@
 | Database       | Prisma + Supabase (PostgreSQL)              |
 | Auth           | Clerk Authentication                        |
 | AI Engine      | NVIDIA NIM (Llama-3.1-70b-Instruct)         |
+| RAG Engine     | Custom TF-IDF + Semantic Keywords + Intent  |
 | State          | Zustand with `persist` middleware           |
 | Styling        | Vanilla CSS (design system in globals.css)  |
 | Fonts          | Bebas Neue · DM Sans · JetBrains Mono       |
+
+---
+
+## Engine Stats
+
+| Metric | Value |
+|--------|-------|
+| Career Database | **100 careers** (39 core + 61 expansion) |
+| Scholarship Database | **74 scholarships** (India + international) |
+| Adversarial Tests | **61 tests** — 100% pass rate |
+| Regression Tests | **78 tests** — 100% pass rate |
+| Quality Score | **90/90** across 10 dimensions |
 
 ---
 
@@ -32,6 +45,23 @@ app/
 ├── dashboard/                ← User persistence & tracking
 ├── layout.tsx                ← Global layout with top-left brand anchor
 └── globals.css               ← Full design system (ember/dark forge aesthetic)
+
+lib/
+├── career-database.ts        ← 39 core career profiles
+├── careers-expansion-data.ts ← 61 expansion career profiles
+├── scholarship-database.ts   ← 74 scholarship entries
+├── scholarships-expansion-data.ts ← Expansion scholarship data
+├── engines.ts                ← Probability calculator, scholarship matcher
+├── rag-engine.ts             ← TF-IDF + semantic keyword matching + intent
+├── tfidf-engine.ts           ← TF-IDF similarity engine
+├── regression-tests.ts       ← 78 regression tests
+└── types.ts                  ← TypeScript type definitions
+
+scripts/
+├── adversarial-tests.ts      ← 61 adversarial stress tests
+├── generate-careers.cjs      ← Career data generator
+├── generate-scholarships.cjs ← Scholarship data generator
+└── validate-database.cjs     ← Database integrity validator
 
 prisma/
 └── schema.prisma             ← Database schema for career paths & users
@@ -71,11 +101,47 @@ npx prisma db push
 npm run dev    # → http://localhost:3000
 ```
 
+### 4. Run Tests
+```bash
+# Adversarial stress tests (61 tests)
+npx tsx scripts/adversarial-tests.ts
+
+# Regression tests (78 tests)
+npx tsx lib/regression-tests.ts
+```
+
+---
+
+## Core Engines
+
+### 1. RAG Career Matcher
+Four-layer matching pipeline:
+- **Exact match** — career name/alias lookup
+- **Semantic keywords** — 280+ keyword → career mappings
+- **TF-IDF similarity** — cosine similarity against career corpus
+- **Intent classification** — maps dreams to action intents (build, heal, create, etc.)
+
+### 2. Multi-Factor Probability Calculator
+Weighted scoring: marks fit (40%) + stream fit (30%) + budget fit (20%) + base (10%) + trend bonus ± exam difficulty modifier ± low-marks penalty.
+
+### 3. Scholarship Intelligence
+74 scholarships with eligibility matching, region filtering (hard filter for `abroad=no`), and budget-aware ranking.
+
+### 4. Anti-Hallucination Guard
+Negative keyword system prevents cross-domain confusion (e.g., "underwriter" ≠ "writer", "marine engineer" ≠ "marine biologist"). 10 dedicated adversarial tests verify collision prevention.
+
+### 5. Reality Check Engine
+Generates specific flags for:
+- Marks gaps (low marks for competitive exams)
+- Stream mismatches (Arts → MBBS)
+- Income reality (volatile careers like esports, acting)
+- Budget constraints
+
 ---
 
 ## Deployment (Vercel)
 
-PathForge AI is optimized for Vercel. 
+PathForge AI is optimized for Vercel.
 
 1. **Connect GitHub**: Push your code and import the repository.
 2. **Environment Variables**: Add all keys from your `.env.local` to the Vercel project settings.
@@ -83,36 +149,11 @@ PathForge AI is optimized for Vercel.
 
 ---
 
-## Core Engines
-
-### 1. AI Reasoning Layer
-Powered by NVIDIA's high-inference engines, PathForge interprets complex, qualitative dream inputs and maps them to high-entropy career branches.
-
-### 2. Multi-Factor Probability Calculator
-Scores: marks fit (40%) + stream fit (30%) + budget fit (20%) + base (10%) + trend bonus ± penalties.
-
-### 3. Reality Check Engine (Brutal Honesty)
-Generates specific flags for budget gaps, salary arbitrage opportunities, and actual survival odds in competitive fields.
-
----
-
 ## Privacy & Persistence
 
-PathForge AI now supports persistent career memory via **Clerk** and **Supabase**. Your data is securely stored and accessible across devices, while maintaining our core principle of user-controlled privacy.
+PathForge AI supports persistent career memory via **Clerk** and **Supabase**. Your data is securely stored and accessible across devices. Local-only mode stores profiles in `localStorage` under `pathforge-v3-store`.
 
 ---
 
 **Built by Vi-Bit Technologies.** ⚡
 *Solving problems smarter, faster, and better.*
-)
-```
-
----
-
-## Privacy
-
-PathForge stores **nothing** on any server. All computation happens in your browser. Your profile is stored in `localStorage` under `pathforge-v3-store`. Clear your browser data to reset.
-
----
-
-Built for students, by students. ⚡

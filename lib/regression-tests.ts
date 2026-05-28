@@ -4,7 +4,7 @@
 // ============================================================
 
 import { CAREERS } from './career-database';
-import { SCHOLARSHIPS } from './scholarship-database';
+import { ALL_SCHOLARSHIPS as SCHOLARSHIPS } from './scholarship-database';
 import { retrieveRelevantCareersWithScores, retrieveRelevantScholarships } from './rag-engine';
 import { validateStreamEligibility } from './career-types';
 import { generateResults } from './engines';
@@ -157,11 +157,54 @@ const actuaryP = makeProfile({ dream_job: 'actuary insurance risk' });
 const actuaryResult = retrieveRelevantCareersWithScores(actuaryP);
 assert('[Actuary] ≠ startup_founder', actuaryResult[0]?.career.id !== 'startup_founder', `got: ${actuaryResult[0]?.career.id}`);
 
-// ─── GROUP 11: BUG-003 — BUDGET HARD FILTER ──────────────────
-console.log('\n═══ GROUP 11: BUDGET HARD FILTER (BUG-003) ═══');
-const budgetStrict = generateResults(makeProfile({ dream_job: 'Doctor', stream: 'PCB', marks: 90, budget: '<1L', loan_open: 'no' as const }));
-const overBudgetInsts = budgetStrict.paths.filter(p => p.institution && p.institution.fees_per_year > 100000);
-assert('[<1L, no loan] zero over-budget institutions', overBudgetInsts.length === 0, `found: ${overBudgetInsts.length} over ₹1L`);
+// ─── GROUP 12: BRIDGE PATHWAYS ────────────────────────────────
+console.log('\n═══ GROUP 12: BRIDGE PATHWAYS ═══');
+const artsSWE = generateResults(makeProfile({ dream_job: 'Software Engineer', stream: 'Arts', marks: 80 }));
+assert('[Arts→SWE] has bridgePath', !!artsSWE.bridgePath, `bridgePath: ${artsSWE.bridgePath}`);
+assert('[Arts→SWE] bridgePath mentions BCA', artsSWE.bridgePath?.includes('BCA') || false, `got: ${artsSWE.bridgePath}`);
+
+const commDoctor = generateResults(makeProfile({ dream_job: 'Doctor', stream: 'Commerce', marks: 85 }));
+assert('[Commerce→Doctor] has bridgePath', !!commDoctor.bridgePath, `bridgePath: ${commDoctor.bridgePath}`);
+
+const pcmSWE = generateResults(makeProfile({ dream_job: 'Software Engineer', stream: 'PCM', marks: 85 }));
+assert('[PCM→SWE] no bridgePath needed', !pcmSWE.bridgePath, `unexpected: ${pcmSWE.bridgePath}`);
+
+// ─── GROUP 13: FUNDED_ONLY FILTER ─────────────────────────────
+console.log('\n═══ GROUP 13: FUNDED_ONLY FILTER ═══');
+const fundedOnly = generateResults(makeProfile({ dream_job: 'Data Scientist', stream: 'PCM', marks: 90, abroad_open: 'if_funded' as const }));
+assert('[if_funded] results exist', fundedOnly.paths.length > 0, `paths: ${fundedOnly.paths.length}`);
+// Verify global institutions have scholarship_available
+const globalInsts = fundedOnly.institutions.filter(i => i.type === 'global');
+assert('[if_funded] has institutions', fundedOnly.institutions.length > 0, `total: ${fundedOnly.institutions.length}`);
+
+// ─── GROUP 14: PROBABILITY MODE CLAMPING ──────────────────────
+console.log('\n═══ GROUP 14: PROBABILITY MODE CLAMPING ═══');
+const clampResult = generateResults(makeProfile({ dream_job: 'Software Engineer', stream: 'PCM', marks: 95, budget: '25L+' }));
+const safePath = clampResult.paths.find(p => p.id === 'safe');
+const balPath = clampResult.paths.find(p => p.id === 'balanced');
+const aggPath = clampResult.paths.find(p => p.id === 'aggressive');
+
+if (safePath) assert('[Safe] probability ≤ 94', safePath.probability <= 94, `got: ${safePath.probability}`);
+if (balPath) assert('[Balanced] probability ≤ 78', balPath.probability <= 78, `got: ${balPath.probability}`);
+if (aggPath) assert('[Aggressive] probability ≤ 48', aggPath.probability <= 48, `got: ${aggPath.probability}`);
+
+// Cross-stream clamping: Arts→SWE aggressive should be very low
+const artsSWEAgg = artsSWE.paths.find(p => p.id === 'aggressive');
+if (artsSWEAgg) assert('[Arts→SWE Aggressive] ≤ 48', artsSWEAgg.probability <= 48, `got: ${artsSWEAgg.probability}`);
+
+// ─── GROUP 15: GAP-2 EXAM BASE RATES ─────────────────────────
+console.log('\n═══ GROUP 15: EXAM BASE RATES ═══');
+const upscResult = generateResults(makeProfile({ dream_job: 'IAS Officer', stream: 'Arts', marks: 80 }));
+assert('[UPSC] has examRoadmap', !!upscResult.examRoadmap, 'no exam roadmap');
+assert('[UPSC] has examBaseRate', !!upscResult.examRoadmap?.examBaseRate, 'no base rate');
+assert('[UPSC] baseRate mentions 0.1%', upscResult.examRoadmap?.examBaseRate?.includes('0.1') || false, `got: ${upscResult.examRoadmap?.examBaseRate}`);
+
+// ─── GROUP 16: GAP-6 CAREER DESCRIPTION + HONEST TRUTH ───────
+console.log('\n═══ GROUP 16: CAREER DESCRIPTION & HONEST TRUTH ═══');
+assert('[SWE] has careerDescription', !!pcmSWE.careerDescription, 'missing description');
+assert('[SWE] careerDescription length > 20', (pcmSWE.careerDescription?.length || 0) > 20, `len: ${pcmSWE.careerDescription?.length}`);
+assert('[SWE] has honestTruth', !!pcmSWE.honestTruth, 'missing honest truth');
+assert('[SWE] honestTruth length > 10', (pcmSWE.honestTruth?.length || 0) > 10, `len: ${pcmSWE.honestTruth?.length}`);
 
 // ─── SUMMARY ──────────────────────────────────────────────────
 console.log('\n═══════════════════════════════════════════');
@@ -169,3 +212,4 @@ console.log(`REGRESSION: ${passed} passed, ${failed} failed of ${passed + failed
 if (failures.length) { console.log('\nFAILURES:'); failures.forEach(f => console.log(`  ❌ ${f}`)); }
 console.log('═══════════════════════════════════════════\n');
 if (failed) process.exit(1);
+

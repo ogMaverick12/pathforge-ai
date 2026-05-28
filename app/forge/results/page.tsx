@@ -217,6 +217,23 @@ function ResultsInner() {
           </section>
         )}
 
+        {/* v2.1: Bridge Pathway (stream-switcher route) */}
+        {results.bridgePath && (
+          <section className="stagger" style={{ marginTop: 16 }}>
+            <div className="card" style={{ borderLeft: '4px solid var(--ember)', background: 'rgba(255,100,0,0.04)' }}>
+              <h4 style={{ fontFamily: 'var(--font-display)', fontSize: 14, letterSpacing: '0.05em', color: 'var(--ember)', marginBottom: 8 }}>
+                🌉 YOUR BRIDGE PATHWAY
+              </h4>
+              <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-dim)' }}>
+                Since your current stream doesn't directly align, here's how to get there:
+              </p>
+              <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--ember)', letterSpacing: '0.02em' }}>
+                {results.bridgePath}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Reality Check */}
         {results.realityFlags.length > 0 && (
           <section className="stagger" style={{ marginTop: 40 }}>

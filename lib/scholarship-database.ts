@@ -1,6 +1,8 @@
 // ============================================================
-// PATHFORGE AI — SCHOLARSHIP DATABASE (v3 — 12 Real Scholarships)
+// PATHFORGE AI — SCHOLARSHIP DATABASE (v4 — 70+ Real Scholarships)
 // ============================================================
+
+import { SCHOLARSHIPS_EXPANSION } from './scholarships-expansion-data';
 
 export interface Scholarship {
   id: string;
@@ -377,3 +379,6 @@ export const SCHOLARSHIPS: Scholarship[] = [
     description: "Available in all Indian states for SC/ST/OBC students. Covers tuition, maintenance, and book allowance."
   }
 ];
+
+// Merge expansion scholarships
+export const ALL_SCHOLARSHIPS = [...SCHOLARSHIPS, ...SCHOLARSHIPS_EXPANSION];

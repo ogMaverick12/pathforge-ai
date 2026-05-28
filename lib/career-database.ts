@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { CareerType } from './career-types';
+import { CAREERS_EXPANSION } from './careers-expansion-data';
 
 export interface CareerProfile {
   id: string;
@@ -55,7 +56,7 @@ export const CAREERS: Record<string, CareerProfile> = {
     careerType: "A",
     domain: "technology",
     semantic_tags: ["software","coding","programming","tech","developer","engineer"],
-    keywords_negative: ["hardware","mechanical","civil engineer"],
+    keywords_negative: ["hardware","mechanical","civil engineer","electrical engineer","chemical engineer","nuclear engineer","petroleum engineer","mining engineer","agricultural engineer"],
     name: "Software Engineer",
     aliases: ["swe", "software developer", "coder", "programmer", "developer",
                "google", "microsoft", "amazon", "faang", "tech", "coding", "web developer", "backend", "frontend", "full stack"],
@@ -118,7 +119,7 @@ export const CAREERS: Record<string, CareerProfile> = {
     examRequired: "NEET-UG",
     roiScore: 7,
     stressScore: 9,
-    description: "Diagnose and treat patients. One of the most respected professions in India.",
+    description: "Walk into any Indian home and say 'my child is a doctor' — the room changes. But beyond prestige, MBBS means 5.5 years of anatomy labs, sleepless residencies, and the weight of life-and-death decisions at 3 AM. India has 1 doctor per 1,000 people (WHO wants 1:250) — the shortage is real, and so is the impact.",
     realityNote: "MBBS is 5.5 years, then 1 year internship, then PG (3 years) if you want to specialize. You're looking at 10+ years before peak earning. This is a vocation, not a career."
   },
 
@@ -183,7 +184,7 @@ export const CAREERS: Record<string, CareerProfile> = {
     examRequired: "JEE / GATE for postgrad",
     roiScore: 9,
     stressScore: 6,
-    description: "Build AI systems that power search, recommendations, and automation at scale.",
+    description: "Netflix's recommendation engine, GPay's fraud detector, Zomato's delivery-time predictor — someone built all of those. Data scientists turn messy real-world data into models that make millions of decisions per second, and India's DS talent pool is now the world's second-largest after the US.",
     realityNote: "'Data science' is now a crowded field. The real money is in ML Engineering (building production systems) — which requires strong software engineering skills, not just notebooks."
   },
 
@@ -249,7 +250,7 @@ export const CAREERS: Record<string, CareerProfile> = {
     examRequired: "CLAT (5-year integrated LLB)",
     roiScore: 7,
     stressScore: 8,
-    description: "Represent clients, draft policy, fight cases. India needs 1.5M more lawyers.",
+    description: "India has 1.4 million pending High Court cases and a judge-to-population ratio worse than most developing nations. Lawyers don't just argue in courtrooms — they draft the contracts behind every startup, fight for rights in PIL battles, and shape policy that affects billions. The shortage is your opportunity.",
     realityNote: "Unless you're at a NLU or top private college, early years in law are brutal financially. Junior lawyers at small firms often earn ₹10–15K/month. The ceiling is enormous but the floor is very low."
   },
 
@@ -282,7 +283,7 @@ export const CAREERS: Record<string, CareerProfile> = {
     examRequired: "NATA + JEE (Paper 2)",
     roiScore: 6,
     stressScore: 7,
-    description: "Design the built environment — from homes to entire cities.",
+    description: "Architects don't just draw buildings — they shape how 1.4 billion people live, work, pray, and play. From reimagining Mumbai's chawls to designing net-zero campuses, you'd solve puzzles where art meets physics meets human behavior, creating spaces that outlive their creators by centuries.",
     realityNote: "Architecture is a 5-year degree followed by 2 years of unpaid/low-paid apprenticeship before you can register as an architect. The creative fulfillment is real; the early income is painful."
   },
 
@@ -743,7 +744,7 @@ export const CAREERS: Record<string, CareerProfile> = {
     examRequired: "Portfolio-based",
     roiScore: 5,
     stressScore: 6,
-    description: "Create images that tell stories, sell products, and document history.",
+    description: "In a world drowning in images, photographers are the ones who make you stop scrolling. Whether you're freezing a war zone in time, making a ₹500 product look like luxury, or capturing the exact second a bride's father tears up — this career trades a predictable paycheck for the freedom to see the world differently.",
     realityNote: "Photography is highly competitive and income is very unequal — top wedding/commercial photographers earn ₹30–80L, average ones earn ₹3–5L. Stock photography income is dying. Niche specialization and business skills matter more than artistic talent alone."
   },
 
@@ -826,7 +827,7 @@ export const CAREERS: Record<string, CareerProfile> = {
     careerType: "C",
     domain: "creative_media",
     semantic_tags: ["writing","author","novelist","content writer","screenwriter"],
-    keywords_negative: ["typing","data entry"],
+    keywords_negative: ["typing","data entry","underwriter","insurance underwriter","technical writer","copywriter","screenwriter","songwriter"],
     name: "Writer / Author / Content Strategist",
     aliases: ["writer", "author", "novelist", "content writer", "copywriter", "screenwriter", "content creator", "blogger", "poet"],
     streams: ["Arts", "Commerce", "PCM", "PCB"],
@@ -852,7 +853,7 @@ export const CAREERS: Record<string, CareerProfile> = {
     examRequired: "Portfolio/writing sample (MFA programs)",
     roiScore: 5,
     stressScore: 6,
-    description: "Tell stories, build brands with words, and shape culture through language.",
+    description: "From Chetan Bhagat selling 12 million copies to tech writers earning ₹40L at Google — 'writer' is no longer code for 'starving artist.' Content fuels every company, app, and platform on Earth, and the people who can make words sell, teach, or move people to tears have never been more in demand.",
     realityNote: "Salaried content writing in India pays poorly (₹3–8L for most roles). Top copywriters, UX writers at tech companies, and technical writers at MNCs earn ₹20–50L. Fiction writing is a passion project until it isn't — most successful authors took 10 years."
   },
 
@@ -978,7 +979,7 @@ export const CAREERS: Record<string, CareerProfile> = {
     keywords_negative: ["fashion model","modeling"],
     name: "Fashion Entrepreneur / Textile Business",
     aliases: ["fashion business", "clothing brand", "textile", "garment", "fashion entrepreneur", "boutique", "ethnic wear", "handloom"],
-    streams: ["Commerce", "Arts", "Vocational"],
+    streams: ["Commerce", "Arts", "Any"],
     minMarks: 45,
     minMarksStretch: 35,
     domains: [
@@ -1109,7 +1110,7 @@ export const CAREERS: Record<string, CareerProfile> = {
     examRequired: "UPSC CSE IFS / UN YPP / Academic route",
     roiScore: 7,
     stressScore: 8,
-    description: "Represent India or work in multilateral institutions shaping global policy.",
+    description: "India has 190+ embassies worldwide and a permanent seat ambition at the UN. Diplomats negotiate trade deals worth billions, evacuate citizens from war zones, and represent 1.4 billion people on the world stage — it's the career where your office might be Geneva one year and Kabul the next.",
     realityNote: "IFS takes only 25–30 officers per year from millions of aspirants. The UN pathway requires international postgrad + exceptional experience + often a second passport or significant luck. Sciences Po and Graduate Institute Geneva produce the most UN professionals globally."
   },
 
@@ -1191,7 +1192,7 @@ export const CAREERS: Record<string, CareerProfile> = {
     careerType: "C",
     domain: "healthcare",
     semantic_tags: ["yoga","wellness","meditation","fitness","holistic health"],
-    keywords_negative: ["gym trainer","bodybuilding"],
+    keywords_negative: ["gym trainer","bodybuilding","digital health","health tech","health architect","health informatics","public health engineer"],
     name: "Yoga Teacher / Wellness Professional",
     aliases: ["yoga", "yoga teacher", "wellness", "meditation", "mindfulness", "ayurveda wellness", "health coach", "yoga instructor"],
     streams: ["Arts", "PCB", "Commerce", "PCM"],
@@ -1264,7 +1265,7 @@ export const CAREERS: Record<string, CareerProfile> = {
     careerType: "C",
     domain: "entrepreneurship",
     semantic_tags: ["startup","entrepreneur","business","founder","venture"],
-    keywords_negative: ["employee","job seeker"],
+    keywords_negative: ["employee","job seeker","forensic","sign language","interpretation","supply chain","insurance","underwriter","plant manager","plant biology"],
     name: "Tech Startup Founder / Entrepreneur",
     aliases: ["startup", "founder", "entrepreneur", "ceo", "build company", "own business", "unicorn",
               "y combinator", "venture", "vc", "saas", "bootstrapped", "elon musk", "startup founder",
@@ -1300,7 +1301,7 @@ export const CAREERS: Record<string, CareerProfile> = {
     careerType: "A",
     domain: "technology",
     semantic_tags: ["product management","pm","product owner","roadmap","agile"],
-    keywords_negative: ["project manager","construction manager"],
+    keywords_negative: ["project manager","construction manager","production manager","plant manager","warehouse manager","office manager","event manager"],
     name: "Product Manager",
     aliases: ["product manager", "pm", "product lead", "apm", "associate product manager", "tech pm",
               "product management", "product owner", "product strategy", "build products"],
@@ -1507,7 +1508,7 @@ export const CAREERS: Record<string, CareerProfile> = {
     ],
     salaryRange: { entry: "₹5-12 LPA", mid: "₹15-35 LPA", senior: "₹50L-1Cr (VP Engineering)" },
     timeline: 4, globalScope: true, examRequired: "JEE Mains/Advanced or State CET", roiScore: 7, stressScore: 6,
-    description: "Design, build, and optimize machines, vehicles, and manufacturing systems.",
+    description: "The engine in every Tata truck, the turbine in every power plant, the assembly line in every Maruti factory — mechanical engineers designed all of it. India's manufacturing sector is targeting $1 trillion by 2030, and mechE is the bedrock discipline that makes physical things work at scale.",
     realityNote: "Core mechanical jobs in India pay ₹3-6L at entry (non-IT). The real money is in: (1) German automobile companies (₹15-30L), (2) switching to product management/consulting after IIT (₹25-50L), (3) MS in Robotics/AI abroad. Pure core mechanical is a passion choice, not a salary-maximizing one."
   },
 
@@ -1680,4 +1681,6 @@ export const CAREERS: Record<string, CareerProfile> = {
     realityNote: "ISI graduates are among the highest-paid in India — they get recruited by Google, Goldman Sachs, and top quant firms at ₹25-50L. The ISS (Indian Statistical Service) via UPSC is a prestigious Group A government service. Pure academic statistics requires a PhD and patience."
   },
 
+  // ── Merge expansion careers ──
+  ...CAREERS_EXPANSION,
 };
