@@ -8,12 +8,17 @@ import { useForgeStore } from '@/stores/forge-store';
 let useAuth: () => { isSignedIn: boolean } = () => ({ isSignedIn: false });
 let UserButton: React.ComponentType<any> = () => null;
 let SignInButton: React.ComponentType<any> = ({ children }: any) => children;
-try {
-  const clerk = require('@clerk/nextjs');
-  if (clerk.useAuth) useAuth = clerk.useAuth;
-  if (clerk.UserButton) UserButton = clerk.UserButton;
-  if (clerk.SignInButton) SignInButton = clerk.SignInButton;
-} catch {}
+
+const hasClerkKeys = !!(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY !== 'pk_test_placeholder');
+
+if (hasClerkKeys) {
+  try {
+    const clerk = require('@clerk/nextjs');
+    if (clerk.useAuth) useAuth = clerk.useAuth;
+    if (clerk.UserButton) UserButton = clerk.UserButton;
+    if (clerk.SignInButton) SignInButton = clerk.SignInButton;
+  } catch {}
+}
 import { generateResults } from '@/lib/engines';
 import type { CareerPath } from '@/lib/types';
 

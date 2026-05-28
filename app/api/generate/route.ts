@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import { NextResponse } from 'next/server';
 import { CAREERS } from '@/lib/career-database';
-import { getInstitutions, generateRealityFlags, matchScholarships } from '@/lib/engines';
+import { getInstitutions, generateRealityFlags, matchScholarships, generateResults } from '@/lib/engines';
 import { retrieveRelevantCareers } from '@/lib/rag-engine';
 import type { ForgeProfile, GeneratedResults, CareerPath } from '@/lib/types';
 import fs from 'fs';
@@ -13,20 +13,26 @@ const institutionDbText = fs.readFileSync(path.join(process.cwd(), 'pathforge_in
 // Raw fetch to be used instead.
 
 export async function POST(req: Request) {
+  let profile: ForgeProfile | null = null;
   try {
-    const { profile }: { profile: ForgeProfile } = await req.json();
+    const body = await req.json();
+    if (!body || !body.profile) {
+      return NextResponse.json({ error: 'Missing profile data' }, { status: 400 });
+    }
+    const validatedProfile = body.profile as ForgeProfile;
+    profile = validatedProfile;
 
-    let topCareers = retrieveRelevantCareers(profile, 8);
+    let topCareers = retrieveRelevantCareers(validatedProfile, 8);
     topCareers = topCareers.filter(c => {
       const dbCareer = CAREERS[c.id];
-      if (dbCareer && !dbCareer.streams.includes(profile.stream)) {
+      if (dbCareer && !dbCareer.streams.includes(validatedProfile.stream)) {
         return false;
       }
       return true;
     });
     
     if (topCareers.length < 3) {
-      topCareers = retrieveRelevantCareers(profile, 10);
+      topCareers = retrieveRelevantCareers(validatedProfile, 10);
     }
 
     const availableCareers = topCareers.map((data) => ({
@@ -54,14 +60,14 @@ Rules:
 6. Crucially, select ONE exact institution name from the "Institution Database Context" provided above that perfectly matches the career, budget, and region of the user for each path.`;
 
     const userPrompt = `User Profile:
-- Stream: ${profile.stream}
-- Marks: ${profile.marks}%
-- Budget: ${profile.budget}
-- Timeline: ${profile.timeline}
-- Open to Abroad: ${profile.abroad_open}
-- Career Trend: ${profile.trend}
-- Dream Job: ${profile.dream_job}
-- Deep Dream/Motivation: ${profile.deep_dream}
+- Stream: ${validatedProfile.stream}
+- Marks: ${validatedProfile.marks}%
+- Budget: ${validatedProfile.budget}
+- Timeline: ${validatedProfile.timeline}
+- Open to Abroad: ${validatedProfile.abroad_open}
+- Career Trend: ${validatedProfile.trend}
+- Dream Job: ${validatedProfile.dream_job}
+- Deep Dream/Motivation: ${validatedProfile.deep_dream}
 
 Generate the paths according to the schema. Output strictly valid JSON and nothing else. No markdown formatting, no backticks. The JSON must have a single root object with a "paths" array of exactly 3 objects.
 Schema:
@@ -82,33 +88,54 @@ Schema:
   ]
 }`;
 
-    const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.NVIDIA_API_KEY || 'dummy_key'}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'meta/llama-3.1-70b-instruct',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`NVIDIA API Error: ${response.status} ${await response.text()}`);
+    const apiKey = process.env.NVIDIA_API_KEY;
+    if (!apiKey || apiKey === 'dummy_key') {
+      console.log('No NVIDIA API key configured. Falling back to local deterministic engine.');
+      const localResults = generateResults(profile);
+      return NextResponse.json(localResults);
     }
 
-    const data = await response.json();
-    const text = data.choices[0]?.message?.content || "";
+    let text = "";
+    try {
+      const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'meta/llama-3.1-70b-instruct',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.7,
+          max_tokens: 2000
+        })
+      });
 
-    // Clean markdown blocks if LLM still includes them
-    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const parsedData = JSON.parse(cleanText);
+      if (!response.ok) {
+        throw new Error(`NVIDIA API Error: ${response.status} ${await response.text()}`);
+      }
+
+      const data = await response.json();
+      text = data.choices[0]?.message?.content || "";
+    } catch (apiError) {
+      console.warn("NVIDIA API call failed, falling back to local deterministic engine:", apiError);
+      const localResults = generateResults(validatedProfile);
+      return NextResponse.json(localResults);
+    }
+
+    let parsedData;
+    try {
+      // Clean markdown blocks if LLM still includes them
+      const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      parsedData = JSON.parse(cleanText);
+    } catch (parseError) {
+      console.warn("Failed to parse NVIDIA API response, falling back to local deterministic engine:", parseError);
+      const localResults = generateResults(validatedProfile);
+      return NextResponse.json(localResults);
+    }
 
     const finalPaths: CareerPath[] = [];
     const colors = { safe: 'success', balanced: 'ember', aggressive: 'heat' } as const;
@@ -120,7 +147,7 @@ Schema:
       if (!careerDb) continue; 
 
       let availableInstitutions = getInstitutions(pathData.careerId);
-      if (profile.abroad_open === "only_abroad") {
+      if (validatedProfile.abroad_open === "only_abroad") {
         const globalOnly = availableInstitutions.filter(i => i.type === "global");
         if (globalOnly.length > 0) availableInstitutions = globalOnly;
       }
@@ -173,8 +200,8 @@ Schema:
       confidenceLabel: "Good",
       streamEligibility: { status: "ELIGIBLE", reason: "AI-generated path" },
       paths: finalPaths,
-      realityFlags: generateRealityFlags(profile, mainCareerId),
-      scholarships: matchScholarships(profile),
+      realityFlags: generateRealityFlags(validatedProfile, mainCareerId),
+      scholarships: matchScholarships(validatedProfile),
       skillDomains: mainCareer.domains,
       institutions: allInstitutions
     };
@@ -182,6 +209,16 @@ Schema:
     return NextResponse.json(finalResults);
   } catch (error) {
     console.error('Generation API Error:', error);
-    return NextResponse.json({ error: "Failed to generate dynamic paths." }, { status: 500 });
+    try {
+      if (profile) {
+        console.log('Attempting local deterministic fallback due to generation processing error.');
+        const localResults = generateResults(profile);
+        return NextResponse.json(localResults);
+      }
+      return NextResponse.json({ error: "Failed to generate dynamic paths. Profile not loaded." }, { status: 500 });
+    } catch (fallbackError) {
+      console.error('Local generation fallback failed:', fallbackError);
+      return NextResponse.json({ error: "Failed to generate dynamic paths." }, { status: 500 });
+    }
   }
 }
