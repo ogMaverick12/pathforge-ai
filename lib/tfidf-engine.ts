@@ -97,6 +97,31 @@ function buildCorpus(): void {
   corpusBuilt = true;
 }
 
+// Synonym mapping for query expansion (simulates local semantic synonym matching)
+const QUERY_EXPANSION_MAP: Record<string, string[]> = {
+  'physician': ['doctor', 'medical', 'mbbs', 'surgeon'],
+  'surgeon': ['doctor', 'medical', 'mbbs', 'surgery'],
+  'doctor': ['medical', 'mbbs', 'physician', 'hospital'],
+  'coder': ['software', 'engineer', 'developer', 'coding', 'programming'],
+  'programmer': ['software', 'engineer', 'developer', 'coding', 'programming'],
+  'developer': ['software', 'engineer', 'coder', 'programming'],
+  'attorney': ['lawyer', 'legal', 'advocate', 'court'],
+  'advocate': ['lawyer', 'legal', 'attorney', 'court'],
+  'lawyer': ['legal', 'advocate', 'attorney', 'court'],
+  'farming': ['agricultural', 'agriculture', 'crops', 'farmer'],
+  'farmer': ['agricultural', 'agriculture', 'farming', 'crops'],
+  'film': ['movie', 'video', 'editor', 'director'],
+  'movie': ['film', 'video', 'editor', 'director'],
+  'video': ['film', 'movie', 'editor', 'editing'],
+  'hacking': ['ethical', 'hacker', 'security', 'cybersecurity', 'pentester'],
+  'hacker': ['hacking', 'security', 'cybersecurity', 'ethical', 'pentester'],
+  'therapist': ['psychologist', 'counseling', 'mental', 'therapy'],
+  'psychology': ['psychologist', 'counseling', 'mental', 'therapy'],
+  'therapy': ['therapist', 'psychologist', 'counseling', 'mental'],
+  'chip': ['semiconductor', 'vlsi', 'asic', 'fpga', 'microprocessor'],
+  'microprocessor': ['semiconductor', 'vlsi', 'asic', 'fpga', 'chip'],
+};
+
 /**
  * Compute TF-IDF cosine similarity between user query and each career.
  * Returns sorted scores for all careers.
@@ -104,8 +129,22 @@ function buildCorpus(): void {
 export function tfidfSimilarity(query: string): { id: string; career: CareerProfile; similarity: number }[] {
   buildCorpus();
 
-  const queryTokens = tokenize(query);
-  if (queryTokens.length === 0) return [];
+  const rawTokens = tokenize(query);
+  if (rawTokens.length === 0) return [];
+
+  // Expand query tokens with synonyms to achieve local semantic matching
+  const queryTokens: string[] = [];
+  for (const token of rawTokens) {
+    queryTokens.push(token);
+    const expansions = QUERY_EXPANSION_MAP[token];
+    if (expansions) {
+      for (const exp of expansions) {
+        if (!queryTokens.includes(exp)) {
+          queryTokens.push(exp);
+        }
+      }
+    }
+  }
 
   // Build query TF vector
   const queryTf = new Map<string, number>();

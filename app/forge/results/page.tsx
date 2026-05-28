@@ -47,6 +47,43 @@ function ResultsInner() {
   const [isTyping, setIsTyping] = useState(false);
   const [cliHistory, setCliHistory] = useState<{sender: 'user' | 'ai', text: string}[]>([{sender: 'ai', text: "I am the PathForge Follow-up Engine. I can compare paths, explain risk factors, or help you pivot. Try asking: 'What if I fail my entrance exams?'"}]);
 
+  // Mock Score Tracker & Loan Calculator States
+  const [mockScore, setMockScore] = useState<number | ''>('');
+  const [loanTermYrs, setLoanTermYrs] = useState<number>(7);
+  const [interestRate, setInterestRate] = useState<number>(9.5);
+  const [customLoanAmount, setCustomLoanAmount] = useState<number | null>(null);
+
+  // Calculate total fee of the target institution
+  const primaryPath = results?.paths?.find(p => p.id === 'balanced') || results?.paths?.[0];
+  const collegeName = primaryPath?.institution?.name || 'Target College';
+  const yearlyFee = primaryPath?.institution?.fees_per_year || 200000;
+  const courseTimeline = primaryPath ? parseInt(primaryPath.timeline) || 4 : 4;
+  const totalCostOfEducation = yearlyFee * courseTimeline;
+
+  // Let user customize loan amount
+  const loanAmount = customLoanAmount !== null ? customLoanAmount : totalCostOfEducation;
+  
+  // Compute EMI
+  const P = loanAmount;
+  const rateVal = (interestRate / 100) / 12;
+  const n = loanTermYrs * 12;
+  const monthlyEMI = P > 0 && rateVal > 0 ? Math.round((P * rateVal * Math.pow(1 + rateVal, n)) / (Math.pow(1 + rateVal, n) - 1)) : 0;
+  const totalRepayment = monthlyEMI * n;
+  const totalInterest = Math.max(0, totalRepayment - P);
+
+  // Calculate adjusted probability
+  const baseClearingProb = results?.examRoadmap?.clearingProbability || 50;
+  let adjustedClearingProb = baseClearingProb;
+  if (results?.examRoadmap && typeof mockScore === 'number' && mockScore >= 0 && mockScore <= 100) {
+    const targetPercentile = results.examRoadmap.examName.includes('UPSC') ? 99 : results.examRoadmap.examName.includes('Advanced') ? 95 : 85;
+    const diff = mockScore - targetPercentile;
+    if (diff >= 0) {
+      adjustedClearingProb = Math.min(99, Math.round(baseClearingProb + diff * (100 - baseClearingProb) / Math.max(1, 100 - targetPercentile)));
+    } else {
+      adjustedClearingProb = Math.max(3, Math.round(baseClearingProb + diff * (baseClearingProb - 3) / targetPercentile));
+    }
+  }
+
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -296,7 +333,10 @@ function ResultsInner() {
                 </div>
                 <div>
                   <span style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>Your Probability</span>
-                  <p style={{ fontSize: 14, color: 'var(--ember)', marginTop: 4, fontWeight: 700 }}>{results.examRoadmap.clearingProbability}%</p>
+                  <p style={{ fontSize: 14, color: 'var(--ember)', marginTop: 4, fontWeight: 700 }}>
+                    {mockScore !== '' ? adjustedClearingProb : results.examRoadmap.clearingProbability}%
+                    {mockScore !== '' && <span style={{ fontSize: 10, color: 'var(--text-dim)', fontWeight: 'normal', marginLeft: 4 }}>(adjusted)</span>}
+                  </p>
                 </div>
               </div>
               {/* National Base Rate */}
@@ -317,7 +357,32 @@ function ResultsInner() {
                 ))}
               </div>
               {/* Reality Note */}
-              <p style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 16, fontStyle: 'italic' }}>⚡ {results.examRoadmap.realityNote}</p>
+              <p style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 16, fontStyle: 'italic', marginBottom: 20 }}>⚡ {results.examRoadmap.realityNote}</p>
+
+              {/* Mock Score Tracker */}
+              <div style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px dashed var(--border)', borderRadius: 8 }}>
+                <h4 style={{ fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--ember)', marginBottom: 4 }}>🎯 MOCK SCORE TRACKER</h4>
+                <p style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 12 }}>
+                  Enter your latest mock test percentile to see how it affects your clearing probability:
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                  <input 
+                    type="number" 
+                    min={0}
+                    max={100}
+                    value={mockScore} 
+                    onChange={e => {
+                      const val = e.target.value === '' ? '' : Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+                      setMockScore(val);
+                    }} 
+                    placeholder="Latest Percentile (0-100)" 
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', padding: '8px 12px', borderRadius: 4, color: 'white', width: 200, fontSize: 13 }}
+                  />
+                  <div style={{ fontSize: 13 }}>
+                    Clearing Probability: <strong style={{ color: 'var(--ember)', fontSize: 16 }}>{adjustedClearingProb}%</strong>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
         )}
@@ -442,6 +507,84 @@ function ResultsInner() {
                   <p style={{ fontSize: 11, color: 'var(--iron)', marginTop: 8 }}>Match: {match.matchReason}</p>
                 </div>
               ))}
+            </div>
+          </section>
+        )}
+
+        {/* Education Loan & EMI Calculator */}
+        {results && (
+          <section className="stagger" style={{ marginTop: 48 }}>
+            <p className="section-label">📊 EDUCATION LOAN & EMI CALCULATOR</p>
+            <div className="card" style={{ borderLeft: '4px solid var(--success)', background: 'rgba(0, 200, 100, 0.01)' }}>
+              <div style={{ marginBottom: 16 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--success)', marginBottom: 4 }}>🏦 Education Loan Estimate for {collegeName}</h3>
+                <p style={{ fontSize: 13, color: 'var(--text-dim)' }}>
+                  Estimated total cost of education: <strong>₹{(totalCostOfEducation / 100000).toFixed(2)} Lakhs</strong> (₹{(yearlyFee/100000).toFixed(2)}L/yr × {courseTimeline} yrs)
+                </p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20, marginBottom: 20 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>
+                    LOAN AMOUNT: ₹{(loanAmount / 100000).toFixed(2)} Lakhs
+                  </label>
+                  <input 
+                    type="range" 
+                    min={Math.min(50000, totalCostOfEducation)} 
+                    max={Math.max(1000000, totalCostOfEducation * 1.5)} 
+                    step={10000} 
+                    value={loanAmount} 
+                    onChange={e => setCustomLoanAmount(parseInt(e.target.value))} 
+                    style={{ width: '100%', accentColor: 'var(--success)' }} 
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-dim)', marginTop: 4 }}>
+                    <span>Min</span>
+                    <span>Max</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>REPAYMENT TENURE</label>
+                  <select 
+                    value={loanTermYrs} 
+                    onChange={e => setLoanTermYrs(parseInt(e.target.value))} 
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', padding: '6px 12px', borderRadius: 4, color: 'white', width: '100%', fontSize: 13 }}
+                  >
+                    <option value={3}>3 Years</option>
+                    <option value={5}>5 Years</option>
+                    <option value={7}>7 Years (Standard)</option>
+                    <option value={10}>10 Years</option>
+                    <option value={12}>12 Years</option>
+                    <option value={15}>15 Years</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', marginBottom: 6 }}>INTEREST RATE (% p.a.)</label>
+                  <input 
+                    type="number" 
+                    step="0.1" 
+                    value={interestRate} 
+                    onChange={e => setInterestRate(parseFloat(e.target.value) || 8.5)} 
+                    style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', padding: '6px 12px', borderRadius: 4, color: 'white', width: '100%', fontSize: 13 }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: 12, borderRadius: 6, border: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>ESTIMATED MONTHLY EMI</span>
+                  <p style={{ fontSize: 20, color: 'var(--success)', fontWeight: 700, marginTop: 4 }}>₹{monthlyEMI.toLocaleString('en-IN')}</p>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: 12, borderRadius: 6, border: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>TOTAL INTEREST</span>
+                  <p style={{ fontSize: 16, color: 'var(--text)', fontWeight: 600, marginTop: 4 }}>₹{totalInterest.toLocaleString('en-IN')}</p>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: 12, borderRadius: 6, border: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>TOTAL REPAYMENT</span>
+                  <p style={{ fontSize: 16, color: 'var(--text)', fontWeight: 600, marginTop: 4 }}>₹{totalRepayment.toLocaleString('en-IN')}</p>
+                </div>
+              </div>
             </div>
           </section>
         )}
